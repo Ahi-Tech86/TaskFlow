@@ -1,6 +1,7 @@
-package com.ahicode.TextMe.services;
+package com.ahicode.TextMe.services.impl;
 
 import com.ahicode.TextMe.enums.JwtTokenType;
+import com.ahicode.TextMe.services.JwtService;
 import com.ahicode.TextMe.utils.JwtKeyProvider;
 import com.ahicode.TextMe.utils.JwtProperties;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
