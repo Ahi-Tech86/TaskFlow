@@ -37,6 +37,16 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
+    public Long extractUserIdFromAccessToken(String token) {
+        return 0L;
+    }
+
+    @Override
+    public Long extractUserIdFromRefreshToken(String token) {
+        return 0L;
+    }
+
+    @Override
     public AppRole extractRoleFromAccessToken(String token) {
         Claims claims = extractAllClaims(token, JwtTokenType.ACCESS);
         String role = claims.get("role", String.class);

@@ -4,6 +4,8 @@ import com.ahicode.TextMe.enums.AppRole;
 import org.springframework.security.core.Authentication;
 
 public interface JwtService {
+    Long extractUserIdFromAccessToken(String token);
+    Long extractUserIdFromRefreshToken(String token);
     boolean isAccessTokenValid(String token);
     boolean isRefreshTokenValid(String token);
     boolean isAccessTokenExpired(String token);

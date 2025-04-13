@@ -2,6 +2,7 @@ package com.ahicode.TextMe.config;
 
 import com.ahicode.TextMe.enums.AppRole;
 import com.ahicode.TextMe.exceptions.AppException;
+import com.ahicode.TextMe.services.CookieService;
 import com.ahicode.TextMe.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,14 +24,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
     private final int tokenMaxAge = 3600;
 
-    private static final Set<String> ALLOWED_PATHS = Set.of(
-            "/api/auth/register",
-            "/api/auth/activate",
-            "/api/auth/login"
-    );
+    private final JwtService jwtService;
+    private final CookieService cookieService;
+    private final AllowedPathsConfig allowedPaths;
 
     @Override
     protected void doFilterInternal(
@@ -41,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // Getting request path
         String path = request.getRequestURI();
 
-        if (ALLOWED_PATHS.contains(path)) {
+        if (allowedPaths.getAllowedPaths().contains(path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -49,7 +47,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // Extracting access token from headers or cookies
         String accessToken = extractAccessToken(request);
         // Extracting refresh token from cookies
-        String refreshToken = extractTokenFromCookies(request, "refreshToken");
+        String refreshToken = cookieService.extractCookieValueFromCookieByName(request, "refreshToken");
 
         try {
             handleTokens(request, response, accessToken, refreshToken);
@@ -111,7 +109,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return authHeader.substring(7);
         }
 
-        return extractTokenFromCookies(request, "accessToken");
+        return cookieService.extractCookieValueFromCookieByName(request, "accessToken");
     }
 
     private void handleRefreshToken(HttpServletResponse response, String token) {
@@ -121,21 +119,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String newAccessToken = jwtService.generateAccessToken(email, role);
         log.info("Generated new access token for a user with email {}", email);
 
-        updateTokenCookie(response, newAccessToken);
+        cookieService.updateCookie(response, newAccessToken, "accessToken", tokenMaxAge);
         authenticateUser(newAccessToken);
-    }
-
-    private void updateTokenCookie(HttpServletResponse response, String token) {
-        Cookie tokenCookie = new Cookie("accessToken", token);
-        tokenCookie.setPath("/");
-        tokenCookie.setHttpOnly(true);
-        tokenCookie.setMaxAge(tokenMaxAge);
-        response.addCookie(tokenCookie);
-    }
-
-    private String extractTokenFromCookies(HttpServletRequest request, String cookieName) {
-        Cookie cookie = WebUtils.getCookie(request, cookieName);
-
-        return (cookie != null) ? cookie.getValue() : null;
     }
 }

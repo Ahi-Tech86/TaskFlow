@@ -1,5 +1,6 @@
 package com.ahicode.TextMe.config;
 
+import com.ahicode.TextMe.services.CookieService;
 import com.ahicode.TextMe.services.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,19 +24,15 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtService jwtService;
+    private final CookieService cookieService;
+    private final AllowedPathsConfig allowedPaths;
     private final UserAuthenticationEntryPoint authEntryPoint;
-
-    private static final List<String> PUBLIC_URLS = Arrays.asList(
-            "/api/auth/register",
-            "/api/auth/activate",
-            "/api/auth/login"
-    );
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(new JwtAuthFilter(jwtService), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthFilter(jwtService, cookieService, allowedPaths), BasicAuthenticationFilter.class)
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(authEntryPoint)
                 )
@@ -43,7 +40,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(HttpMethod.POST, PUBLIC_URLS.toArray(new String[0])).permitAll()
+                        .requestMatchers(HttpMethod.POST, allowedPaths.getAllowedPaths().toArray(new String[0])).permitAll()
                         .anyRequest().authenticated()
                 );
 
