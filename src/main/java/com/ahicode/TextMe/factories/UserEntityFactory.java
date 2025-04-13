@@ -17,6 +17,7 @@ public class UserEntityFactory {
                 .nickname(userDto.getNickname())
                 .firstname(userDto.getFirstname())
                 .lastname(userDto.getLastname())
+                .password(userDto.getPassword())
                 .role(USER)
                 .createAt(Instant.now())
                 .build();
@@ -28,6 +29,7 @@ public class UserEntityFactory {
                 .nickname(userDto.getNickname())
                 .firstname(userDto.getFirstname())
                 .lastname(userDto.getLastname())
+                .password(userDto.getPassword())
                 .role(ADMIN)
                 .createAt(Instant.now())
                 .build();

@@ -151,6 +151,7 @@ public class AuthServiceImpl implements AuthService {
         String confirmationCode = activateRegistrationRequest.getConfirmationCode();
 
         TemporaryUserDto temporaryUserDto = redisTemplate.opsForValue().get(email);
+        System.out.println(temporaryUserDto);
         return confirmUser(email, confirmationCode, temporaryUserDto);
     }
 
@@ -220,7 +221,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         UserEntity user = entityFactory.makeUserEntity(temporaryUserDto);
-
         user.setPassword(passwordEncoder.encode(temporaryUserDto.getPassword()));
 
         UserEntity savedUser = repository.saveAndFlush(user);
