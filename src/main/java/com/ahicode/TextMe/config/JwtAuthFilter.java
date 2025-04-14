@@ -113,10 +113,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void handleRefreshToken(HttpServletResponse response, String token) {
+        Long userId = jwtService.extractUserIdFromRefreshToken(token);
         AppRole role = jwtService.extractRoleFromRefreshToken(token);
         String email = jwtService.extractEmailFromRefreshToken(token);
 
-        String newAccessToken = jwtService.generateAccessToken(email, role);
+        String newAccessToken = jwtService.generateAccessToken(userId, email, role);
         log.info("Generated new access token for a user with email {}", email);
 
         cookieService.updateCookie(response, newAccessToken, "accessToken", tokenMaxAge);

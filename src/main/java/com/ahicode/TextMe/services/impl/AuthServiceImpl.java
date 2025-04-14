@@ -124,11 +124,12 @@ public class AuthServiceImpl implements AuthService {
         if (passwordEncoder.matches(signInRequest.getPassword(), user.getPassword())) {
             integerRedisTemplate.delete(failedLoginKey);
 
+            Long userId = user.getId();
             AppRole role = user.getRole();
             UserDto userDto = dtoFactory.makeUserDto(user);
 
-            String accessToken = jwtService.generateAccessToken(nickname, role);
-            String refreshToken = jwtService.generateRefreshToken(nickname, role);
+            String accessToken = jwtService.generateAccessToken(userId, nickname, role);
+            String refreshToken = jwtService.generateRefreshToken(userId, nickname, role);
 
             AuthResponse response = authResponseFactory.makeAuthResponse(userDto, accessToken, refreshToken);
 

@@ -15,6 +15,6 @@ public interface JwtService {
     String extractEmailFromAccessToken(String token);
     String extractEmailFromRefreshToken(String token);
     Authentication authenticateAccessToken(String token);
-    String generateAccessToken(String email, AppRole role);
-    String generateRefreshToken(String email, AppRole role);
+    String generateAccessToken(Long userId, String email, AppRole role);
+    String generateRefreshToken(Long userId, String email, AppRole role);
 }

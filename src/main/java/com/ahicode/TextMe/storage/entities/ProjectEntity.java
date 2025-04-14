@@ -7,6 +7,8 @@ import lombok.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Setter
@@ -39,4 +41,7 @@ public class ProjectEntity {
     @NotNull
     @Column(name = "create_at")
     private LocalDate createAt;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProjectMemberEntity> members = new HashSet<>();
 }

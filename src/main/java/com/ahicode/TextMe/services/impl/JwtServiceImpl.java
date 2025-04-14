@@ -38,12 +38,16 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public Long extractUserIdFromAccessToken(String token) {
-        return 0L;
+        Claims claims = extractAllClaims(token, JwtTokenType.ACCESS);
+
+        return claims.get("id", Long.class);
     }
 
     @Override
     public Long extractUserIdFromRefreshToken(String token) {
-        return 0L;
+        Claims claims = extractAllClaims(token, JwtTokenType.REFRESH);
+
+        return claims.get("id", Long.class);
     }
 
     @Override
@@ -96,13 +100,13 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String generateAccessToken(String email, AppRole role) {
-        return generateToken(email, role, JwtTokenType.ACCESS);
+    public String generateAccessToken(Long userId, String email, AppRole role) {
+        return generateToken(userId, email, role, JwtTokenType.ACCESS);
     }
 
     @Override
-    public String generateRefreshToken(String email, AppRole role) {
-        return generateToken(email, role, JwtTokenType.REFRESH);
+    public String generateRefreshToken(Long userId, String email, AppRole role) {
+        return generateToken(userId, email, role, JwtTokenType.REFRESH);
     }
 
 
@@ -153,7 +157,7 @@ public class JwtServiceImpl implements JwtService {
         return new UsernamePasswordAuthenticationToken(email, null, Collections.emptyList());
     }
 
-    private String generateToken(String email, AppRole role, JwtTokenType tokenType) {
+    private String generateToken(Long userId, String email, AppRole role, JwtTokenType tokenType) {
         Key signKey = resolveSignKey(tokenType);
         Long expirationTime = resolveExpirationTime(tokenType);
 
@@ -161,8 +165,9 @@ public class JwtServiceImpl implements JwtService {
         long currentTimeMillis = currentTime.toEpochMilli();
 
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id", userId);
         claims.put("role", role);
-
+        
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(email)
