@@ -1,7 +1,7 @@
 package com.ahicode.TextMe.controller;
 
-import com.ahicode.TextMe.dtos.*;
-import com.ahicode.TextMe.services.AuthService;
+import com.ahicode.TextMe.model.dto.*;
+import com.ahicode.TextMe.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,6 +1,6 @@
 package com.ahicode.TextMe.config;
 
-import com.ahicode.TextMe.dtos.TemporaryUserDto;
+import com.ahicode.TextMe.model.dto.TemporaryUserDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
