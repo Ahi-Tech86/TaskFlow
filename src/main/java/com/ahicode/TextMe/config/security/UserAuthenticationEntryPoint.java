@@ -1,6 +1,6 @@
 package com.ahicode.TextMe.config.security;
 
-import com.ahicode.TextMe.model.dto.ErrorDto;
+import com.ahicode.TextMe.model.dto.errors.ErrorDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;

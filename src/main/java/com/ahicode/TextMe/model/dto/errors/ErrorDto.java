@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.model.dto;
+package com.ahicode.TextMe.model.dto.errors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;

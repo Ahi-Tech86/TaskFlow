@@ -1,6 +1,10 @@
 package com.ahicode.TextMe.controller;
 
-import com.ahicode.TextMe.model.dto.*;
+import com.ahicode.TextMe.model.dto.auth.ActivateRegistrationRequest;
+import com.ahicode.TextMe.model.dto.auth.AuthResponse;
+import com.ahicode.TextMe.model.dto.auth.SignInRequest;
+import com.ahicode.TextMe.model.dto.auth.SignUpRequest;
+import com.ahicode.TextMe.model.dto.user.UserDto;
 import com.ahicode.TextMe.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

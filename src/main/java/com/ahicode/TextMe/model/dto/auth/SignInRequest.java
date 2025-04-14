@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.model.dto;
+package com.ahicode.TextMe.model.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TemporaryUserDto {
+public class SignInRequest {
     private String email;
-    private String nickname;
-    private String firstname;
-    private String lastname;
     private String password;
-    private String confirmationCode;
 }

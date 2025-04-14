@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.model.dto;
+package com.ahicode.TextMe.model.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

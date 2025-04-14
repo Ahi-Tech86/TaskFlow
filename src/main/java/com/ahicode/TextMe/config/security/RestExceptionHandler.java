@@ -1,6 +1,6 @@
 package com.ahicode.TextMe.config.security;
 
-import com.ahicode.TextMe.model.dto.ErrorDto;
+import com.ahicode.TextMe.model.dto.errors.ErrorDto;
 import com.ahicode.TextMe.exception.AppException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

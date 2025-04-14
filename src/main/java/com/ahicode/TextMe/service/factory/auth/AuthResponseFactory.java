@@ -1,7 +1,7 @@
-package com.ahicode.TextMe.service.factory;
+package com.ahicode.TextMe.service.factory.auth;
 
-import com.ahicode.TextMe.model.dto.AuthResponse;
-import com.ahicode.TextMe.model.dto.UserDto;
+import com.ahicode.TextMe.model.dto.auth.AuthResponse;
+import com.ahicode.TextMe.model.dto.user.UserDto;
 import org.springframework.stereotype.Component;
 
 @Component

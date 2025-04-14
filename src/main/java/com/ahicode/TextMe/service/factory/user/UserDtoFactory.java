@@ -1,6 +1,6 @@
-package com.ahicode.TextMe.service.factory;
+package com.ahicode.TextMe.service.factory.user;
 
-import com.ahicode.TextMe.model.dto.UserDto;
+import com.ahicode.TextMe.model.dto.user.UserDto;
 import com.ahicode.TextMe.model.entity.UserEntity;
 import org.springframework.stereotype.Component;
 

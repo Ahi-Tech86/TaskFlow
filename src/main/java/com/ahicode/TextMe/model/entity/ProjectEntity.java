@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,8 +40,9 @@ public class ProjectEntity {
 
     @NotNull
     @Column(name = "create_at")
-    private LocalDate createAt;
+    private LocalDateTime createAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProjectMemberEntity> members = new HashSet<>();
 }

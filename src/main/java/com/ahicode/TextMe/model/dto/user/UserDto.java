@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.model.dto;
+package com.ahicode.TextMe.model.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignInRequest {
+public class UserDto {
     private String email;
-    private String password;
+    private String nickname;
+    private String firstname;
+    private String lastname;
 }

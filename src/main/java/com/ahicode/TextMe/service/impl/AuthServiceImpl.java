@@ -1,12 +1,17 @@
 package com.ahicode.TextMe.service.impl;
 
-import com.ahicode.TextMe.model.dto.*;
+import com.ahicode.TextMe.model.dto.auth.ActivateRegistrationRequest;
+import com.ahicode.TextMe.model.dto.auth.AuthResponse;
+import com.ahicode.TextMe.model.dto.auth.SignInRequest;
+import com.ahicode.TextMe.model.dto.auth.SignUpRequest;
+import com.ahicode.TextMe.model.dto.user.TemporaryUserDto;
+import com.ahicode.TextMe.model.dto.user.UserDto;
 import com.ahicode.TextMe.model.enums.AppRole;
 import com.ahicode.TextMe.exception.AppException;
-import com.ahicode.TextMe.service.factory.AuthResponseFactory;
-import com.ahicode.TextMe.service.factory.TemporaryUserDtoFactory;
-import com.ahicode.TextMe.service.factory.UserDtoFactory;
-import com.ahicode.TextMe.service.factory.UserEntityFactory;
+import com.ahicode.TextMe.service.factory.auth.AuthResponseFactory;
+import com.ahicode.TextMe.service.factory.user.TemporaryUserDtoFactory;
+import com.ahicode.TextMe.service.factory.user.UserDtoFactory;
+import com.ahicode.TextMe.service.factory.user.UserEntityFactory;
 import com.ahicode.TextMe.service.AuthService;
 import com.ahicode.TextMe.service.EmailService;
 import com.ahicode.TextMe.service.JwtService;

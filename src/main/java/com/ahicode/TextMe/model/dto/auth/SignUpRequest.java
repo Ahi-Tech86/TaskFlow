@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.model.dto;
+package com.ahicode.TextMe.model.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
