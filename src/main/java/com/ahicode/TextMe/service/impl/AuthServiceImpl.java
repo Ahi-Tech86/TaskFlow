@@ -166,7 +166,7 @@ public class AuthServiceImpl implements AuthService {
 
         int number = 1 + random.nextInt(1000000);
 
-        return String.format("%6d", number);
+        return String.format("%06d", number);
     }
 
     private boolean isEmailValid(String email) {
