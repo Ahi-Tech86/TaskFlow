@@ -32,6 +32,15 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMemberEnti
     );
 
     @Query(
+            value = "SELECT * FROM project_member AS pm " +
+                    "WHERE pm.nickname = :nickname AND pm.project_id = :projectId",
+            nativeQuery = true
+    )
+    Optional<ProjectMemberEntity> getOptionalProjectMemberEntityByProjectIdAndUserNickname(
+            @Param("nickname") String nickname, @Param("projectId") Long projectId
+    );
+
+    @Query(
             value = "SELECT p.name, p.description, p.create_at, p.start_date " +
                     "FROM project_member AS pm JOIN project AS p " +
                     "ON pm.project_id = p.id " +

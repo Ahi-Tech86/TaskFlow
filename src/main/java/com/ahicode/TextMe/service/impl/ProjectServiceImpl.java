@@ -48,7 +48,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         ProjectEntity savedProject = repository.saveAndFlush(project);
         log.info("Project saved with ID: {}", savedProject.getId());
-        ProjectMemberEntity projectMember = memberEntityFactory.makeProjectMemberEntity(
+        ProjectMemberEntity projectMember = memberEntityFactory.makeProjectMemberEntityForProjectCreator(
                 savedProject, ProjectRole.PROJECT_MANAGER, userNickname
         );
         memberRepository.saveAndFlush(projectMember);

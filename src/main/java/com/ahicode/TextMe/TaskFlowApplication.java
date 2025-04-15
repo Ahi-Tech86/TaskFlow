@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TextMeApplication {
+public class TaskFlowApplication {
 
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.configure().load();
@@ -13,7 +13,7 @@ public class TextMeApplication {
 				entry -> System.setProperty(entry.getKey(), entry.getValue())
 		);
 
-		SpringApplication.run(TextMeApplication.class, args);
+		SpringApplication.run(TaskFlowApplication.class, args);
 	}
 
 }
