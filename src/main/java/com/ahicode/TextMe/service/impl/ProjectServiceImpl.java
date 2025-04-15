@@ -1,11 +1,13 @@
 package com.ahicode.TextMe.service.impl;
 
+import com.ahicode.TextMe.config.security.accessControl.PermissionChecker;
 import com.ahicode.TextMe.exception.AppException;
 import com.ahicode.TextMe.model.dto.project.ProjectCreateRequestDto;
 import com.ahicode.TextMe.model.dto.project.ProjectDto;
 import com.ahicode.TextMe.model.dto.project.ProjectUpdateRequestDto;
 import com.ahicode.TextMe.model.entity.ProjectEntity;
 import com.ahicode.TextMe.model.entity.ProjectMemberEntity;
+import com.ahicode.TextMe.model.enums.Action;
 import com.ahicode.TextMe.model.enums.ProjectRole;
 import com.ahicode.TextMe.repository.ProjectMemberRepository;
 import com.ahicode.TextMe.repository.ProjectRepository;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
 
+    private final PermissionChecker permissionChecker;
     private final ProjectDtoFactory dtoFactory;
     private final ProjectRepository repository;
     private final DateTimeFactory dateTimeFactory;
@@ -58,7 +61,13 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDto updateProjectInfo(Long userId, Long projectId, ProjectUpdateRequestDto requestDto) {
         ProjectEntity project = isProjectExistsById(projectId);
-        isUserProjectManager(projectId, userId);
+        ProjectMemberEntity projectMember = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+        boolean canUpdateProject = permissionChecker.hasPermission(projectMember, "project", Action.UPDATE, null);
+
+        if (!canUpdateProject) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
 
         if (requestDto.getName() != null) {
             project.setName(requestDto.getName());
@@ -106,7 +115,14 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public void deleteProject(Long userId, Long projectId) {
         isProjectExistsById(projectId);
-        isUserProjectManager(projectId, userId);
+
+        ProjectMemberEntity projectMember = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+        boolean canDeleteProject = permissionChecker.hasPermission(projectMember, "project", Action.DELETE, null);
+
+        if (!canDeleteProject) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
 
         repository.deleteById(projectId);
         log.info("Project with ID {} was delete", projectId);
@@ -122,14 +138,5 @@ public class ProjectServiceImpl implements ProjectService {
         );
 
         return project;
-    }
-
-    private void isUserProjectManager(Long projectId, Long userId) {
-        ProjectMemberEntity projectMember = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
-
-        if (!projectMember.getRole().equals(ProjectRole.PROJECT_MANAGER)) {
-            log.error("Attempt to change resource with not sufficient project permissions");
-            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
-        }
     }
 }
