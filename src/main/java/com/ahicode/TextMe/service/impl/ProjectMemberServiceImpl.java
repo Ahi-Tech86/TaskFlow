@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +37,32 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     @Override
     public List<ProjectMemberDto> getProjectMembers(Long projectId, Long userId) {
-        return List.of();
+        isProjectExistsById(projectId);
+        ProjectMemberEntity user = memberRepository
+                .getOptionalProjectMemberEntityByProjectIdAndUserId(userId, projectId)
+                .orElseThrow(
+                        () -> new AppException(
+                                String.format("User is not member of project with id %s", projectId),
+                                HttpStatus.NOT_FOUND
+                        )
+                );
+
+        boolean canViewProjectMembersList = permissionChecker
+                .hasPermission(user, "members", Action.VIEW_LIST_OF_MEMBERS, null);
+
+        if (!canViewProjectMembersList) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        List<ProjectMemberEntity> projectMembers = memberRepository.getAllProjectMembers(projectId);
+        List<ProjectMemberDto> responseBody = new ArrayList<>();
+
+        for (ProjectMemberEntity entity : projectMembers) {
+            responseBody.add(memberDtoFactory.makeProjectMemberDto(entity));
+        }
+
+        return responseBody;
     }
 
     @Override
@@ -65,7 +91,39 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     @Override
     public void excludeUserFromProject(Long projectId, Long excluderId, String excludedUserNickname) {
+        isProjectExistsById(projectId);
+        ProjectMemberEntity excluder = memberRepository.getProjectMemberEntityByProjectIdAndUserId(excluderId, projectId);
+        ProjectMemberEntity excludedUser = isUserProjectMember(excludedUserNickname, projectId);
 
+        boolean canExcludeUser = permissionChecker.hasPermission(excluder, "members", Action.EXCLUDE_MEMBER, excludedUser);
+        if (!canExcludeUser) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        memberRepository.deleteById(excludedUser.getId());
+        log.info("User with nickname {} has been excluded from project with id {}", excludedUserNickname, projectId);
+    }
+
+    @Override
+    public ProjectMemberDto changeRoleForProjectMember(Long projectId, Long changerId, String targetNickname, String newRole) {
+        isProjectExistsById(projectId);
+        ProjectMemberEntity changer = memberRepository.getProjectMemberEntityByProjectIdAndUserId(changerId, projectId);
+        ProjectMemberEntity targetMember = isUserProjectMember(targetNickname, projectId);
+
+        boolean canChangeRole = permissionChecker.hasPermission(changer, "members", Action.CHANGE_MEMBER_ROLE, null);
+        if (!canChangeRole) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        ProjectRole role = getProjectRole(newRole);
+        targetMember.setRole(role);
+
+        ProjectMemberEntity savedMember = memberRepository.save(targetMember);
+        log.info("Member of project with id {} with nickname got a new role", projectId, targetNickname);
+
+        return memberDtoFactory.makeProjectMemberDto(savedMember);
     }
 
     private ProjectEntity isProjectExistsById(Long projectId) {
@@ -101,6 +159,22 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             throw new AppException(
                     String.format("User with nickname %s already is project member", nickname), HttpStatus.BAD_REQUEST
             );
+        }
+    }
+
+    private ProjectMemberEntity isUserProjectMember(String nickname, Long projectId) {
+        Optional<ProjectMemberEntity> optionalProjectMember = memberRepository
+                .getOptionalProjectMemberEntityByProjectIdAndUserNickname(nickname, projectId);
+
+        if (optionalProjectMember.isEmpty()) {
+            log.error("Attempt to exclude user who is not a member of the project with id: {}", projectId);
+            throw new AppException(
+                    String.format("The user with the nickname %s is not a member of the project with id %s, so you " +
+                            "cannot exclude him", nickname, projectId),
+                    HttpStatus.BAD_REQUEST
+            );
+        } else {
+            return optionalProjectMember.get();
         }
     }
 

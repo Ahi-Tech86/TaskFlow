@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @Validated
 @RestController
@@ -36,5 +38,42 @@ public class ProjectMemberController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(projectMemberService.inviteInProject(projectId, inviterId, inviteeNickname, inviteeRole));
+    }
+
+    @DeleteMapping("/exclude")
+    public ResponseEntity<Void> excludeMember(
+            HttpServletRequest request,
+            @PathVariable Long projectId,
+            @RequestParam(name = "nickname") String excludedMemberNickname
+    ) {
+        String accessToken = cookieService.extractCookieValueFromCookieByName(request, accessTokenCookieName);
+        Long excluderId = jwtService.extractUserIdFromAccessToken(accessToken);
+        projectMemberService.excludeUserFromProject(projectId, excluderId, excludedMemberNickname);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProjectMemberDto>> getAllProjectMembers(
+            HttpServletRequest request,
+            @PathVariable Long projectId
+    ) {
+        String accessToken = cookieService.extractCookieValueFromCookieByName(request, accessTokenCookieName);
+        Long userId = jwtService.extractUserIdFromAccessToken(accessToken);
+
+        return ResponseEntity.ok(projectMemberService.getProjectMembers(projectId, userId));
+    }
+
+    @PatchMapping("/changeRole")
+    public ResponseEntity<ProjectMemberDto> changeRole(
+            HttpServletRequest request,
+            @PathVariable Long projectId,
+            @RequestParam(name = "role") String newRole,
+            @RequestParam(name = "nickname") String targetNickname
+    ) {
+        String accessToken = cookieService.extractCookieValueFromCookieByName(request, accessTokenCookieName);
+        Long changerId = jwtService.extractUserIdFromAccessToken(accessToken);
+
+        return ResponseEntity.ok(projectMemberService.changeRoleForProjectMember(projectId, changerId, targetNickname, newRole));
     }
 }
