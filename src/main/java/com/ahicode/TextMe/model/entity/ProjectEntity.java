@@ -45,4 +45,8 @@ public class ProjectEntity {
     @Builder.Default
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProjectMemberEntity> members = new HashSet<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TaskEntity> tasks = new HashSet<>();
 }

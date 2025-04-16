@@ -13,17 +13,17 @@ public class ProjectMemberEntityFactory {
         return ProjectMemberEntity.builder()
                 .userId(entity.getOwnerId())
                 .memberNickname(userNickname)
-                .projectId(entity.getId())
                 .role(role)
+                .project(entity)
                 .joinedAt(LocalDate.now())
                 .build();
     }
 
-    public ProjectMemberEntity makeProjectMemberEntity(Long userId, String nickname, Long projectId, ProjectRole role) {
+    public ProjectMemberEntity makeProjectMemberEntity(Long userId, String nickname, ProjectEntity project, ProjectRole role) {
         return ProjectMemberEntity.builder()
                 .userId(userId)
                 .memberNickname(nickname)
-                .projectId(projectId)
+                .project(project)
                 .role(role)
                 .joinedAt(LocalDate.now())
                 .build();

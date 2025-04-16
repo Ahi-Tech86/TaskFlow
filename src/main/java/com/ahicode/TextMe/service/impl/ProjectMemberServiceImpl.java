@@ -67,7 +67,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     @Override
     public ProjectMemberDto inviteInProject(Long projectId, Long inviterId, String inviteeNickname, String inviteeRole) {
-        isProjectExistsById(projectId);
+        ProjectEntity project = isProjectExistsById(projectId);
         ProjectMemberEntity inviter = memberRepository.getProjectMemberEntityByProjectIdAndUserId(inviterId, projectId);
         isUserAlreadyProjectMember(inviteeNickname, projectId);
         UserEntity inviteeUser = isUserExistsByNickname(inviteeNickname);
@@ -81,7 +81,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         ProjectRole role = ProjectRole.fromName(inviteeRole);
 
         ProjectMemberEntity memberEntity = memberEntityFactory
-                .makeProjectMemberEntity(inviteeUser.getId(), inviteeNickname, projectId, role);
+                .makeProjectMemberEntity(inviteeUser.getId(), inviteeNickname, project, role);
 
         ProjectMemberEntity savedMemberEntity = memberRepository.save(memberEntity);
         log.info("Added new user in project with id {}", projectId);

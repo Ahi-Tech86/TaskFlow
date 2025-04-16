@@ -31,10 +31,6 @@ public class ProjectMemberEntity {
     private String memberNickname;
 
     @NotNull
-    @Column(name = "project_id")
-    private Long projectId;
-
-    @NotNull
     @Enumerated(EnumType.STRING)
     private ProjectRole role;
 
@@ -43,6 +39,6 @@ public class ProjectMemberEntity {
     private LocalDate joinedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", insertable = false, updatable = false)
+    @JoinColumn(name = "project_id")
     private ProjectEntity project;
 }
