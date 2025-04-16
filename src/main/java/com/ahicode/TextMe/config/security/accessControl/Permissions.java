@@ -19,9 +19,9 @@ public class Permissions {
         {
             Map<String, Map<Action, PermissionCheck<?>>> managerPermissions = new HashMap<>();
             managerPermissions.put("project", Map.of(
-                    Action.READ, (user, resource) -> true,
-                    Action.UPDATE, (user, resource) -> true,
-                    Action.DELETE, (user, resource) -> true
+                    Action.READ_PROJECT, (user, resource) -> true,
+                    Action.UPDATE_PROJECT, (user, resource) -> true,
+                    Action.DELETE_PROJECT, (user, resource) -> true
             ));
             managerPermissions.put("members", Map.of(
                     Action.INVITE_MEMBER, (user, resource) -> true,
@@ -36,7 +36,7 @@ public class Permissions {
         {
             Map<String, Map<Action, PermissionCheck<?>>> teamLeadPermissions = new HashMap<>();
             teamLeadPermissions.put("project", Map.of(
-                    Action.READ, (user, resource) -> true
+                    Action.READ_PROJECT, (user, resource) -> true
             ));
             teamLeadPermissions.put("members", Map.of(
                     Action.EXCLUDE_MEMBER, (PermissionCheck<ProjectMemberEntity>)
@@ -51,7 +51,7 @@ public class Permissions {
         {
             Map<String, Map<Action, PermissionCheck<?>>> memberPermissions = new HashMap<>();
             memberPermissions.put("project", Map.of(
-                    Action.READ, (user, resource) -> true
+                    Action.READ_PROJECT, (user, resource) -> true
             ));
             memberPermissions.put("members", Map.of(
                     Action.VIEW_LIST_OF_MEMBERS, (user, resource) -> true
@@ -63,7 +63,7 @@ public class Permissions {
         {
             Map<String, Map<Action, PermissionCheck<?>>> stakeholderPermissions = new HashMap<>();
             stakeholderPermissions.put("project", Map.of(
-                    Action.READ, (user, resource) -> true
+                    Action.READ_PROJECT, (user, resource) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.STAKEHOLDER, stakeholderPermissions);
         }

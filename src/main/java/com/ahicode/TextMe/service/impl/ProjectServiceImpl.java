@@ -12,6 +12,7 @@ import com.ahicode.TextMe.model.enums.ProjectRole;
 import com.ahicode.TextMe.repository.ProjectMemberRepository;
 import com.ahicode.TextMe.repository.ProjectRepository;
 import com.ahicode.TextMe.service.ProjectService;
+import com.ahicode.TextMe.service.ProjectValidationService;
 import com.ahicode.TextMe.service.factory.DateTimeFactory;
 import com.ahicode.TextMe.service.factory.project.ProjectDtoFactory;
 import com.ahicode.TextMe.service.factory.project.ProjectEntityFactory;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
 
+    private final ProjectValidationService projectValidationService;
     private final PermissionChecker permissionChecker;
     private final ProjectDtoFactory dtoFactory;
     private final ProjectRepository repository;
@@ -60,9 +62,9 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectDto updateProjectInfo(Long userId, Long projectId, ProjectUpdateRequestDto requestDto) {
-        ProjectEntity project = isProjectExistsById(projectId);
+        ProjectEntity project = projectValidationService.isProjectExistsById(projectId);
         ProjectMemberEntity projectMember = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
-        boolean canUpdateProject = permissionChecker.hasPermission(projectMember, "project", Action.UPDATE, null);
+        boolean canUpdateProject = permissionChecker.hasPermission(projectMember, "project", Action.UPDATE_PROJECT, null);
 
         if (!canUpdateProject) {
             log.error("Attempt to change resource with not sufficient project permissions");
@@ -114,10 +116,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public void deleteProject(Long userId, Long projectId) {
-        isProjectExistsById(projectId);
+        projectValidationService.isProjectExistsById(projectId);
 
         ProjectMemberEntity projectMember = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
-        boolean canDeleteProject = permissionChecker.hasPermission(projectMember, "project", Action.DELETE, null);
+        boolean canDeleteProject = permissionChecker.hasPermission(projectMember, "project", Action.DELETE_PROJECT, null);
 
         if (!canDeleteProject) {
             log.error("Attempt to change resource with not sufficient project permissions");
@@ -126,17 +128,5 @@ public class ProjectServiceImpl implements ProjectService {
 
         repository.deleteById(projectId);
         log.info("Project with ID {} was delete", projectId);
-    }
-
-    private ProjectEntity isProjectExistsById(Long projectId) {
-        ProjectEntity project = repository.findById(projectId).orElseThrow(
-                () -> {
-                    String errorMessage = String.format("Project with id %s doesn't exists", projectId);
-                    log.warn("Attempt to change info about non-existent project with id: {}", projectId);
-                    return new AppException(errorMessage, HttpStatus.NOT_FOUND);
-                }
-        );
-
-        return project;
     }
 }

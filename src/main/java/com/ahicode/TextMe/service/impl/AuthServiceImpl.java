@@ -8,13 +8,11 @@ import com.ahicode.TextMe.model.dto.user.TemporaryUserDto;
 import com.ahicode.TextMe.model.dto.user.UserDto;
 import com.ahicode.TextMe.model.enums.AppRole;
 import com.ahicode.TextMe.exception.AppException;
+import com.ahicode.TextMe.service.*;
 import com.ahicode.TextMe.service.factory.auth.AuthResponseFactory;
 import com.ahicode.TextMe.service.factory.user.TemporaryUserDtoFactory;
 import com.ahicode.TextMe.service.factory.user.UserDtoFactory;
 import com.ahicode.TextMe.service.factory.user.UserEntityFactory;
-import com.ahicode.TextMe.service.AuthService;
-import com.ahicode.TextMe.service.EmailService;
-import com.ahicode.TextMe.service.JwtService;
 import com.ahicode.TextMe.model.entity.UserEntity;
 import com.ahicode.TextMe.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -43,14 +41,12 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
     private final UserEntityFactory entityFactory;
     private final PasswordEncoder passwordEncoder;
+    private final UserValidationService validationService;
     private final AuthResponseFactory authResponseFactory;
+    private final ActivationCodeGenerator activationCodeGenerator;
     private final TemporaryUserDtoFactory temporaryUserDtoFactory;
     private final RedisTemplate<String, Integer> integerRedisTemplate;
     private final RedisTemplate<String, TemporaryUserDto> redisTemplate;
-
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-            "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
-    );
 
     @Autowired
     public AuthServiceImpl(
@@ -60,7 +56,9 @@ public class AuthServiceImpl implements AuthService {
             EmailService emailService,
             UserEntityFactory entityFactory,
             PasswordEncoder passwordEncoder,
+            UserValidationService validationService,
             AuthResponseFactory authResponseFactory,
+            ActivationCodeGenerator activationCodeGenerator,
             TemporaryUserDtoFactory temporaryUserDtoFactory,
             @Qualifier("redisTemplate") RedisTemplate<String, TemporaryUserDto> redisTemplate,
             @Qualifier("integerRedisTemplate") RedisTemplate<String, Integer> integerRedisTemplate
@@ -71,7 +69,9 @@ public class AuthServiceImpl implements AuthService {
         this.emailService = emailService;
         this.entityFactory = entityFactory;
         this.passwordEncoder = passwordEncoder;
+        this.validationService = validationService;
         this.authResponseFactory = authResponseFactory;
+        this.activationCodeGenerator = activationCodeGenerator;
         this.temporaryUserDtoFactory = temporaryUserDtoFactory;
         this.redisTemplate = redisTemplate;
         this.integerRedisTemplate = integerRedisTemplate;
@@ -82,15 +82,10 @@ public class AuthServiceImpl implements AuthService {
         String email = signUpRequest.getEmail();
         String nickname = signUpRequest.getNickname();
 
-        if (!isEmailValid(email)) {
-            log.error("Attempt register with invalid email {}", email);
-            throw new AppException("Email is invalid", HttpStatus.BAD_REQUEST);
-        }
+        validationService.isEmailUnique(email);
+        validationService.isNicknameUnique(nickname);
 
-        isEmailUniqueness(email);
-        isNicknameUniqueness(nickname);
-
-        String confirmationCode = generateCode();
+        String confirmationCode = activationCodeGenerator.generateCode();
 
         TemporaryUserDto temporaryUserDto = temporaryUserDtoFactory.makeTemporaryUserDto(signUpRequest, confirmationCode);
         redisTemplate.opsForValue().set(email, temporaryUserDto, 20, TimeUnit.MINUTES);
@@ -123,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
-        UserEntity user = isUserExistsByEmail(email);
+        UserEntity user = validationService.isUserExistsByEmail(email);
         String nickname = user.getNickname();
 
         if (passwordEncoder.matches(signInRequest.getPassword(), user.getPassword())) {
@@ -161,49 +156,10 @@ public class AuthServiceImpl implements AuthService {
         return confirmUser(email, confirmationCode, temporaryUserDto);
     }
 
-    private String generateCode() {
-        Random random = new Random();
-
-        int number = 1 + random.nextInt(1000000);
-
-        return String.format("%06d", number);
-    }
-
-    private boolean isEmailValid(String email) {
-        if (email == null) {
-            return false;
-        }
-
-        Matcher matcher = EMAIL_PATTERN.matcher(email);
-        return matcher.matches();
-    }
-
-    private void isEmailUniqueness(String email) {
-        checkUniqueness(
-                "email", email, repository::findByEmail, "User with email %s is already exists"
-        );
-    }
-
     private boolean isLockedLogin(String lockKey) {
         Boolean isLocked = integerRedisTemplate.hasKey(lockKey);
 
         return isLocked != null && isLocked;
-    }
-
-    private void isNicknameUniqueness(String nickname) {
-        checkUniqueness(
-                "nickname", nickname,
-                repository::findByNickname, "User with nickname %s is already exists"
-        );
-    }
-
-    private UserEntity isUserExistsByEmail(String email) {
-        return repository.findByEmail(email).orElseThrow(
-                () -> {
-                    log.error("Attempt to log into an account with non-existent email {}", email);
-                    throw new AppException(String.format("User with email %s doesn't exists", email), HttpStatus.NOT_FOUND);
-                }
-        );
     }
 
     private void handleFailedLogin(String failedLoginKey, String lockKey) {
@@ -233,17 +189,5 @@ public class AuthServiceImpl implements AuthService {
         log.info("User with email {} was successfully saved", email);
 
         return dtoFactory.makeUserDto(savedUser);
-    }
-
-    private void checkUniqueness(
-            String varName, String value, Function<String, Optional<UserEntity>> findFunction, String errorMessage
-    ) {
-        findFunction.apply(value)
-                .ifPresent(
-                        user -> {
-                            log.error("Attempt to register with an existing {} {}", varName, value);
-                            throw new AppException(String.format(errorMessage, value), HttpStatus.BAD_REQUEST);
-                        }
-                );
     }
 }

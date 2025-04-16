@@ -78,7 +78,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
         }
 
-        ProjectRole role = getProjectRole(inviteeRole);
+        ProjectRole role = ProjectRole.fromName(inviteeRole);
 
         ProjectMemberEntity memberEntity = memberEntityFactory
                 .makeProjectMemberEntity(inviteeUser.getId(), inviteeNickname, projectId, role);
@@ -117,7 +117,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
         }
 
-        ProjectRole role = getProjectRole(newRole);
+        ProjectRole role = ProjectRole.fromName(newRole);
         targetMember.setRole(role);
 
         ProjectMemberEntity savedMember = memberRepository.save(targetMember);
@@ -175,15 +175,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             );
         } else {
             return optionalProjectMember.get();
-        }
-    }
-
-    private ProjectRole getProjectRole(String inviteeRole) {
-        try {
-            return ProjectRole.valueOf(inviteeRole.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            log.error("Attempt to assign a non-existent role {} a user", inviteeRole);
-            throw new AppException(String.format("Role with the name %s do not exist", inviteeRole), HttpStatus.BAD_REQUEST);
         }
     }
 }
