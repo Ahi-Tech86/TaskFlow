@@ -1,8 +1,10 @@
 package com.ahicode.TextMe.config.security.accessControl;
 
 import com.ahicode.TextMe.model.entity.ProjectMemberEntity;
+import com.ahicode.TextMe.model.entity.TaskEntity;
 import com.ahicode.TextMe.model.enums.Action;
 import com.ahicode.TextMe.model.enums.ProjectRole;
+import com.ahicode.TextMe.model.enums.TaskStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -29,6 +31,14 @@ public class Permissions {
                     Action.CHANGE_MEMBER_ROLE, (user, resource) -> true,
                     Action.VIEW_LIST_OF_MEMBERS, (user, resource) -> true
             ));
+            managerPermissions.put("tasks", Map.of(
+                    Action.CREATE_TASK, (user, task) -> true,
+                    Action.READ_TASK, (user, task) -> true,
+                    Action.ASSIGN_TASK, (PermissionCheck<ProjectMemberEntity>) (user, member) -> !member.getRole().equals(ProjectRole.STAKEHOLDER) || !member.getRole().equals(ProjectRole.PROJECT_MANAGER),
+                    Action.UPDATE_INFO_OF_TASK, (user, task) -> true,
+                    Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.NEEDS_APPROVAL),
+                    Action.DELETE_TASK, (user, task) -> true
+            ));
             ROLES_PERMISSIONS.put(ProjectRole.PROJECT_MANAGER, managerPermissions);
         }
 
@@ -39,10 +49,16 @@ public class Permissions {
                     Action.READ_PROJECT, (user, resource) -> true
             ));
             teamLeadPermissions.put("members", Map.of(
-                    Action.EXCLUDE_MEMBER, (PermissionCheck<ProjectMemberEntity>)
-                            (user, member) -> member.getRole()
-                                    .equals(ProjectRole.PROJECT_MEMBER),
+                    Action.EXCLUDE_MEMBER, (PermissionCheck<ProjectMemberEntity>) (user, member) -> member.getRole().equals(ProjectRole.PROJECT_MEMBER),
                     Action.VIEW_LIST_OF_MEMBERS, (user, resource) -> true
+            ));
+            teamLeadPermissions.put("tasks", Map.of(
+                    Action.CREATE_TASK, (user, task) -> true,
+                    Action.READ_TASK, (user, task) -> true,
+                    Action.ASSIGN_TASK, (PermissionCheck<ProjectMemberEntity>) (user, member) -> member.getRole().equals(ProjectRole.PROJECT_MEMBER),
+                    Action.UPDATE_INFO_OF_TASK, (user, task) -> true,
+                    Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.NEEDS_APPROVAL) || task.getAssignedId().equals(user.getUserId()),
+                    Action.DELETE_TASK, (user, task) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.TEAM_LEAD, teamLeadPermissions);
         }
@@ -56,6 +72,12 @@ public class Permissions {
             memberPermissions.put("members", Map.of(
                     Action.VIEW_LIST_OF_MEMBERS, (user, resource) -> true
             ));
+            memberPermissions.put("tasks", Map.of(
+                    Action.CREATE_TASK, (user, task) -> true,
+                    Action.READ_TASK, (user, task) -> true,
+                    Action.UPDATE_INFO_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getAssignedId().equals(user.getUserId()) || task.getCreatorId().equals(user.getUserId()),
+                    Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.TO_DO) || task.getStatus().equals(TaskStatus.IN_PROGRESS)
+            ));
             ROLES_PERMISSIONS.put(ProjectRole.PROJECT_MEMBER, memberPermissions);
         }
 
@@ -64,6 +86,9 @@ public class Permissions {
             Map<String, Map<Action, PermissionCheck<?>>> stakeholderPermissions = new HashMap<>();
             stakeholderPermissions.put("project", Map.of(
                     Action.READ_PROJECT, (user, resource) -> true
+            ));
+            stakeholderPermissions.put("tasks", Map.of(
+                    Action.READ_TASK, (user, task) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.STAKEHOLDER, stakeholderPermissions);
         }

@@ -1,6 +1,8 @@
 package com.ahicode.TextMe.model.entity;
 
 import com.ahicode.TextMe.model.enums.ProjectRole;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -41,4 +43,11 @@ public class ProjectMemberEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private ProjectEntity project;
+
+    @Override
+    public String toString() {
+        return String
+                .format("id: " + this.id + ",%n userId: " + this.userId + ",%n nickname: " + this.memberNickname +
+                        ",%n role: " + this.role + ",%n joined_at: " + this.joinedAt.toString());
+    }
 }

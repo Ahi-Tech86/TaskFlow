@@ -3,5 +3,7 @@ package com.ahicode.TextMe.model.enums;
 public enum TaskStatus {
     TO_DO,
     IN_PROGRESS,
-    DONE;
+    NEEDS_APPROVAL,
+    DONE,
+    OVERDUE;
 }
