@@ -2,6 +2,7 @@ package com.ahicode.TextMe.model.dto.task;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,18 +26,11 @@ public class TaskUpdateRequestDto {
     private String description;
 
     @Nullable
-    @Size(min = 4, max = 15)
-    private String status;
-
-    @Nullable
     @Size(min = 3, max = 10)
     private String priority;
 
     @Nullable
+    @FutureOrPresent(message = "Due date must be today or in the future")
     @JsonProperty("due_date")
     private LocalDate dueDate;
-
-    @Nullable
-    @JsonProperty("assigned_to")
-    private String assignedTo;
 }

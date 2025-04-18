@@ -10,6 +10,7 @@ import com.ahicode.TextMe.model.entity.ProjectMemberEntity;
 import com.ahicode.TextMe.model.entity.TaskEntity;
 import com.ahicode.TextMe.model.enums.Action;
 import com.ahicode.TextMe.model.enums.TaskPriority;
+import com.ahicode.TextMe.model.enums.TaskStatus;
 import com.ahicode.TextMe.repository.ProjectMemberRepository;
 import com.ahicode.TextMe.repository.TaskRepository;
 import com.ahicode.TextMe.service.ProjectValidationService;
@@ -20,6 +21,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -34,11 +38,10 @@ public class TaskServiceImpl implements TaskService {
     private final ProjectValidationService projectValidationService;
 
     @Override
+    @Transactional
     public TaskDto createTask(Long projectId, Long userId, TaskCreateRequestDto requestDto) {
-        // Check if a project exists by ID
         ProjectEntity project = projectValidationService.isProjectExistsById(projectId);
 
-        // Getting the entity of the task creator
         ProjectMemberEntity taskCreator = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
 
         String assignedNickname = requestDto.getAssignedTo();
@@ -71,7 +74,113 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDto updateTask(Long projectId, Long taskId, Long userId, TaskUpdateRequestDto requestDto) {
-        return null;
+        projectValidationService.isProjectExistsById(projectId);
+
+        ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+
+        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
+                () -> {
+                    log.error("Attempt to update non-existent task information with ID {}", taskId);
+                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
+                }
+        );
+
+        if (requestDto.getTitle() != null) {
+            task.setTitle(requestDto.getTitle());
+        }
+        if (requestDto.getDescription() != null) {
+            task.setDescription(requestDto.getDescription());
+        }
+        TaskPriority priority = (requestDto.getPriority() == null) ? null : TaskPriority.fromName(requestDto.getPriority());
+        if (priority != null) {
+            task.setPriority(priority);
+        }
+        if (requestDto.getDueDate() != null) {
+            task.setDueDate(requestDto.getDueDate());
+        }
+        task.setUpdateAt(LocalDateTime.now());
+
+        boolean canUpdateTaskInfo = permissionChecker.hasPermission(member, "tasks", Action.UPDATE_INFO_OF_TASK, task);
+        if (!canUpdateTaskInfo) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        TaskEntity savedTask = taskRepository.save(task);
+        log.info("Task information with ID {} was successfully updated", savedTask.getId());
+
+        String assignedNickname = memberRepository
+                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getMemberNickname();
+
+        String creatorNickname = memberRepository
+                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getMemberNickname();
+
+        return dtoFactory.makeTaskDto(savedTask, assignedNickname, creatorNickname);
+    }
+
+    @Override
+    public TaskDto getTask(Long projectId, Long taskId, Long userId) {
+        projectValidationService.isProjectExistsById(projectId);
+
+        ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+
+        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
+                () -> {
+                    log.error("Attempt to update non-existent task information with ID {}", taskId);
+                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
+                }
+        );
+
+        boolean canReadTask = permissionChecker.hasPermission(member, "tasks", Action.READ_TASK, null);
+        if (!canReadTask) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        String assignedNickname = memberRepository
+                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getMemberNickname();
+        String creatorNickname = memberRepository
+                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getMemberNickname();
+
+        return dtoFactory.makeTaskDto(task, assignedNickname, creatorNickname);
+    }
+
+    @Override
+    public TaskDto changeStatus(Long projectId, Long taskId, Long userId) {
+        projectValidationService.isProjectExistsById(projectId);
+
+        ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+
+        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
+                () -> {
+                    log.error("Attempt to update non-existent task information with ID {}", taskId);
+                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
+                }
+        );
+
+        boolean canChangeStatus = permissionChecker.hasPermission(member, "tasks", Action.CHANGE_STATUS_OF_TASK, task);
+        if (!canChangeStatus) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        task.setStatus(TaskStatus.changeNextStatus(task.getStatus()));
+        TaskEntity savedTask = taskRepository.save(task);
+        log.info("Task information with ID {} was successfully updated", savedTask.getId());
+
+        String assignedNickname = memberRepository
+                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getMemberNickname();
+
+        String creatorNickname = memberRepository
+                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getMemberNickname();
+
+        return dtoFactory.makeTaskDto(savedTask, assignedNickname, creatorNickname);
+    }
+
+    @Override
+    public void deleteTask(Long projectId, Long taskId, Long userId) {
+
     }
 }

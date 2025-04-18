@@ -2,6 +2,7 @@ package com.ahicode.TextMe.model.dto.task;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -31,6 +32,7 @@ public class TaskCreateRequestDto {
     private String priority;
 
     @NotBlank(message = "Task due date is mandatory")
+    @FutureOrPresent(message = "Due date must be today or in the future")
     @JsonProperty("due_date")
     private LocalDate dueDate;
 
