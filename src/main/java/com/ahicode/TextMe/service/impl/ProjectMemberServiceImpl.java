@@ -69,8 +69,8 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     public ProjectMemberDto inviteInProject(Long projectId, Long inviterId, String inviteeNickname, String inviteeRole) {
         ProjectEntity project = isProjectExistsById(projectId);
         ProjectMemberEntity inviter = memberRepository.getProjectMemberEntityByProjectIdAndUserId(inviterId, projectId);
-        isUserAlreadyProjectMember(inviteeNickname, projectId);
         UserEntity inviteeUser = isUserExistsByNickname(inviteeNickname);
+        isUserAlreadyProjectMember(inviteeNickname, projectId);
 
         boolean canInviteUser = permissionChecker.hasPermission(inviter, "members", Action.INVITE_MEMBER, null);
         if (!canInviteUser) {
@@ -81,7 +81,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         ProjectRole role = ProjectRole.fromName(inviteeRole);
 
         ProjectMemberEntity memberEntity = memberEntityFactory
-                .makeProjectMemberEntity(inviteeUser.getId(), inviteeNickname, project, role);
+                .makeProjectMemberEntity(inviteeUser, project, role);
 
         ProjectMemberEntity savedMemberEntity = memberRepository.save(memberEntity);
         log.info("Added new user in project with id {}", projectId);
@@ -152,7 +152,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     private void isUserAlreadyProjectMember(String nickname, Long projectId) {
         Optional<ProjectMemberEntity> optionalProjectMember = memberRepository
-                .getOptionalProjectMemberEntityByProjectIdAndUserNickname(nickname, projectId);
+                .findOptionalByNicknameAndProjectId(nickname, projectId);
 
         if (optionalProjectMember.isPresent()) {
             log.error("Attempt to invite user which already is project member with nickname: {}", nickname);
@@ -164,7 +164,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     private ProjectMemberEntity isUserProjectMember(String nickname, Long projectId) {
         Optional<ProjectMemberEntity> optionalProjectMember = memberRepository
-                .getOptionalProjectMemberEntityByProjectIdAndUserNickname(nickname, projectId);
+                .findOptionalByNicknameAndProjectId(nickname, projectId);
 
         if (optionalProjectMember.isEmpty()) {
             log.error("Attempt to exclude user who is not a member of the project with id: {}", projectId);

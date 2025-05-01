@@ -57,7 +57,7 @@ public class Permissions {
                     Action.READ_TASK, (user, task) -> true,
                     Action.ASSIGN_TASK, (PermissionCheck<ProjectMemberEntity>) (user, member) -> member.getRole().equals(ProjectRole.PROJECT_MEMBER),
                     Action.UPDATE_INFO_OF_TASK, (user, task) -> true,
-                    Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.NEEDS_APPROVAL) || task.getAssignedId().equals(user.getUserId()),
+                    Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (member, task) -> task.getStatus().equals(TaskStatus.NEEDS_APPROVAL) || task.getAssignedId().equals(member.getUser().getId()),
                     Action.DELETE_TASK, (user, task) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.TEAM_LEAD, teamLeadPermissions);
@@ -75,7 +75,7 @@ public class Permissions {
             memberPermissions.put("tasks", Map.of(
                     Action.CREATE_TASK, (user, task) -> true,
                     Action.READ_TASK, (user, task) -> true,
-                    Action.UPDATE_INFO_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getAssignedId().equals(user.getUserId()) || task.getCreatorId().equals(user.getUserId()),
+                    Action.UPDATE_INFO_OF_TASK, (PermissionCheck<TaskEntity>) (member, task) -> task.getAssignedId().equals(member.getUser().getId()) || task.getCreatorId().equals(member.getUser().getId()),
                     Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.TO_DO) || task.getStatus().equals(TaskStatus.IN_PROGRESS)
             ));
             ROLES_PERMISSIONS.put(ProjectRole.PROJECT_MEMBER, memberPermissions);

@@ -7,10 +7,12 @@ import com.ahicode.TextMe.model.dto.project.ProjectDto;
 import com.ahicode.TextMe.model.dto.project.ProjectUpdateRequestDto;
 import com.ahicode.TextMe.model.entity.ProjectEntity;
 import com.ahicode.TextMe.model.entity.ProjectMemberEntity;
+import com.ahicode.TextMe.model.entity.UserEntity;
 import com.ahicode.TextMe.model.enums.Action;
 import com.ahicode.TextMe.model.enums.ProjectRole;
 import com.ahicode.TextMe.repository.ProjectMemberRepository;
 import com.ahicode.TextMe.repository.ProjectRepository;
+import com.ahicode.TextMe.repository.UserRepository;
 import com.ahicode.TextMe.service.ProjectService;
 import com.ahicode.TextMe.service.ProjectValidationService;
 import com.ahicode.TextMe.service.factory.DateTimeFactory;
@@ -36,6 +38,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectValidationService projectValidationService;
     private final PermissionChecker permissionChecker;
+    private final UserRepository userRepository;
     private final ProjectDtoFactory dtoFactory;
     private final ProjectRepository repository;
     private final DateTimeFactory dateTimeFactory;
@@ -47,11 +50,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDto createProject(Long userId, String userNickname, ProjectCreateRequestDto requestDto) {
         ProjectEntity project = entityFactory.makeProjectEntity(requestDto, userId);
+        UserEntity user = userRepository.findById(userId).orElseThrow();
 
         ProjectEntity savedProject = repository.saveAndFlush(project);
         log.info("Project saved with ID: {}", savedProject.getId());
         ProjectMemberEntity projectMember = memberEntityFactory.makeProjectMemberEntityForProjectCreator(
-                savedProject, ProjectRole.PROJECT_MANAGER, userNickname
+                savedProject, ProjectRole.PROJECT_MANAGER, user
         );
         memberRepository.saveAndFlush(projectMember);
         log.info("Project member created with ID: {}", projectMember.getId());
@@ -64,8 +68,8 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDto updateProjectInfo(Long userId, Long projectId, ProjectUpdateRequestDto requestDto) {
         ProjectEntity project = projectValidationService.isProjectExistsById(projectId);
         ProjectMemberEntity projectMember = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
-        boolean canUpdateProject = permissionChecker.hasPermission(projectMember, "project", Action.UPDATE_PROJECT, null);
 
+        boolean canUpdateProject = permissionChecker.hasPermission(projectMember, "project", Action.UPDATE_PROJECT, null);
         if (!canUpdateProject) {
             log.error("Attempt to change resource with not sufficient project permissions");
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);

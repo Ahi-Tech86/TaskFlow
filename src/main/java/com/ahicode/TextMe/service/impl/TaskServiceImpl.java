@@ -46,7 +46,7 @@ public class TaskServiceImpl implements TaskService {
 
         String assignedNickname = requestDto.getAssignedTo();
         ProjectMemberEntity assignedTo = memberRepository
-                .getOptionalProjectMemberEntityByProjectIdAndUserNickname(assignedNickname, projectId)
+                .findOptionalByNicknameAndProjectId(assignedNickname, projectId)
                 .orElseThrow(
                         () -> {
                             log.error("Attempt to assign task to a user {} who is not a member of the project", assignedNickname);
@@ -63,14 +63,14 @@ public class TaskServiceImpl implements TaskService {
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
         }
 
-        Long assignedId = assignedTo.getUserId();
+        Long assignedId = assignedTo.getUser().getId();
         TaskPriority priority = (requestDto.getPriority() == null) ? TaskPriority.LOW : TaskPriority.fromName(requestDto.getPriority());
 
-        TaskEntity task = entityFactory.makeTaskEntity(project, taskCreator.getUserId(), assignedId, priority, requestDto);
+        TaskEntity task = entityFactory.makeTaskEntity(project, taskCreator.getUser().getId(), assignedId, priority, requestDto);
         TaskEntity savedTask = taskRepository.save(task);
         log.info("Saved new task with ID {}", savedTask.getId());
 
-        return dtoFactory.makeTaskDto(savedTask, assignedTo.getMemberNickname(), taskCreator.getMemberNickname());
+        return dtoFactory.makeTaskDto(savedTask, assignedTo.getUser().getNickname(), taskCreator.getUser().getNickname());
     }
 
     @Override
@@ -83,7 +83,7 @@ public class TaskServiceImpl implements TaskService {
         TaskEntity task = taskRepository.findById(taskId).orElseThrow(
                 () -> {
                     log.error("Attempt to update non-existent task information with ID {}", taskId);
-                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
+                    return new AppException(String.format("Task with ID %s doesn't exists", taskId), HttpStatus.BAD_REQUEST);
                 }
         );
 
@@ -112,10 +112,10 @@ public class TaskServiceImpl implements TaskService {
         log.info("Task information with ID {} was successfully updated", savedTask.getId());
 
         String assignedNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getMemberNickname();
+                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getUser().getNickname();
 
         String creatorNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getMemberNickname();
+                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
 
         return dtoFactory.makeTaskDto(savedTask, assignedNickname, creatorNickname);
     }
@@ -140,9 +140,9 @@ public class TaskServiceImpl implements TaskService {
         }
 
         String assignedNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getMemberNickname();
+                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getUser().getNickname();
         String creatorNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getMemberNickname();
+                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
 
         return dtoFactory.makeTaskDto(task, assignedNickname, creatorNickname);
     }
@@ -171,10 +171,10 @@ public class TaskServiceImpl implements TaskService {
         log.info("Task information with ID {} was successfully updated", savedTask.getId());
 
         String assignedNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getMemberNickname();
+                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getUser().getNickname();
 
         String creatorNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getMemberNickname();
+                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
 
         return dtoFactory.makeTaskDto(savedTask, assignedNickname, creatorNickname);
     }

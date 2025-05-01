@@ -14,6 +14,21 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMemberEnti
     @NotNull Optional<ProjectMemberEntity> findById(@NotNull Long id);
 
     @Query(
+            "SELECT pm FROM ProjectMemberEntity pm " +
+            "JOIN pm.user u " +
+            "JOIN pm.project p " +
+            "WHERE u.nickname = :nickname AND p.id = :projectId"
+    )
+    Optional<ProjectMemberEntity> findOptionalByNicknameAndProjectId(@Param("nickname") String nickname, @Param("projectId") Long projectId);
+
+    @Query(
+            "SELECT pm FROM ProjectMemberEntity pm " +
+            "JOIN pm.user u " +
+            "WHERE u.nickname = :nickname AND pm.project.id = :projectId"
+    )
+    Optional<ProjectMemberEntity> findByNicknameAndProjectId(@Param("nickname") String nickname, @Param("projectId") Long projectId);
+
+    @Query(
             value = "SELECT * FROM project_member AS pm " +
                     "WHERE pm.project_id = :projectId",
             nativeQuery = true

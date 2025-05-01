@@ -47,7 +47,6 @@ public class ProjectController {
             @Valid @RequestBody ProjectUpdateRequestDto requestDto
     ) {
         String accessToken = cookieService.extractCookieValueFromCookieByName(request, accessTokenCookieName);
-
         Long userId = jwtService.extractUserIdFromAccessToken(accessToken);
 
         return ResponseEntity.ok(projectService.updateProjectInfo(userId, projectId, requestDto));
