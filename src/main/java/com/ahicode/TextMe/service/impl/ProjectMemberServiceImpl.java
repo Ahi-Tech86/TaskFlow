@@ -12,6 +12,8 @@ import com.ahicode.TextMe.repository.ProjectMemberRepository;
 import com.ahicode.TextMe.repository.ProjectRepository;
 import com.ahicode.TextMe.repository.UserRepository;
 import com.ahicode.TextMe.service.ProjectMemberService;
+import com.ahicode.TextMe.service.ProjectMemberValidationService;
+import com.ahicode.TextMe.service.ProjectValidationService;
 import com.ahicode.TextMe.service.factory.project.ProjectMemberDtoFactory;
 import com.ahicode.TextMe.service.factory.project.ProjectMemberEntityFactory;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +36,12 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     private final ProjectMemberRepository memberRepository;
     private final ProjectMemberDtoFactory memberDtoFactory;
     private final ProjectMemberEntityFactory memberEntityFactory;
+    private final ProjectValidationService projectValidationService;
+    private final ProjectMemberValidationService projectMemberValidationService;
 
     @Override
     public List<ProjectMemberDto> getProjectMembers(Long projectId, Long userId) {
-        isProjectExistsById(projectId);
+        projectValidationService.isProjectExistsById(projectId);
         ProjectMemberEntity user = memberRepository
                 .getOptionalProjectMemberEntityByProjectIdAndUserId(userId, projectId)
                 .orElseThrow(
@@ -67,10 +71,10 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     @Override
     public ProjectMemberDto inviteInProject(Long projectId, Long inviterId, String inviteeNickname, String inviteeRole) {
-        ProjectEntity project = isProjectExistsById(projectId);
+        ProjectEntity project = projectValidationService.isProjectExistsById(projectId);
         ProjectMemberEntity inviter = memberRepository.getProjectMemberEntityByProjectIdAndUserId(inviterId, projectId);
         UserEntity inviteeUser = isUserExistsByNickname(inviteeNickname);
-        isUserAlreadyProjectMember(inviteeNickname, projectId);
+        projectMemberValidationService.isUserAlreadyProjectMember(projectId, inviteeNickname);
 
         boolean canInviteUser = permissionChecker.hasPermission(inviter, "members", Action.INVITE_MEMBER, null);
         if (!canInviteUser) {
@@ -91,9 +95,9 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     @Override
     public void excludeUserFromProject(Long projectId, Long excluderId, String excludedUserNickname) {
-        isProjectExistsById(projectId);
+        projectValidationService.isProjectExistsById(projectId);
         ProjectMemberEntity excluder = memberRepository.getProjectMemberEntityByProjectIdAndUserId(excluderId, projectId);
-        ProjectMemberEntity excludedUser = isUserProjectMember(excludedUserNickname, projectId);
+        ProjectMemberEntity excludedUser = projectMemberValidationService.isUserProjectMember(projectId, excludedUserNickname);
 
         boolean canExcludeUser = permissionChecker.hasPermission(excluder, "members", Action.EXCLUDE_MEMBER, excludedUser);
         if (!canExcludeUser) {
@@ -107,9 +111,9 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     @Override
     public ProjectMemberDto changeRoleForProjectMember(Long projectId, Long changerId, String targetNickname, String newRole) {
-        isProjectExistsById(projectId);
+        projectValidationService.isProjectExistsById(projectId);
         ProjectMemberEntity changer = memberRepository.getProjectMemberEntityByProjectIdAndUserId(changerId, projectId);
-        ProjectMemberEntity targetMember = isUserProjectMember(targetNickname, projectId);
+        ProjectMemberEntity targetMember = projectMemberValidationService.isUserProjectMember(projectId, targetNickname);
 
         boolean canChangeRole = permissionChecker.hasPermission(changer, "members", Action.CHANGE_MEMBER_ROLE, null);
         if (!canChangeRole) {
@@ -126,18 +130,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         return memberDtoFactory.makeProjectMemberDto(savedMember);
     }
 
-    private ProjectEntity isProjectExistsById(Long projectId) {
-        ProjectEntity project = projectRepository.findById(projectId).orElseThrow(
-                () -> {
-                    String errorMessage = String.format("Project with id %s doesn't exists", projectId);
-                    log.warn("Attempt to change info about non-existent project with id: {}", projectId);
-                    return new AppException(errorMessage, HttpStatus.NOT_FOUND);
-                }
-        );
-
-        return project;
-    }
-
     private UserEntity isUserExistsByNickname(String nickname) {
         UserEntity user = userRepository.findByNickname(nickname).orElseThrow(
                 () -> {
@@ -148,33 +140,5 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         );
 
         return user;
-    }
-
-    private void isUserAlreadyProjectMember(String nickname, Long projectId) {
-        Optional<ProjectMemberEntity> optionalProjectMember = memberRepository
-                .findOptionalByNicknameAndProjectId(nickname, projectId);
-
-        if (optionalProjectMember.isPresent()) {
-            log.error("Attempt to invite user which already is project member with nickname: {}", nickname);
-            throw new AppException(
-                    String.format("User with nickname %s already is project member", nickname), HttpStatus.BAD_REQUEST
-            );
-        }
-    }
-
-    private ProjectMemberEntity isUserProjectMember(String nickname, Long projectId) {
-        Optional<ProjectMemberEntity> optionalProjectMember = memberRepository
-                .findOptionalByNicknameAndProjectId(nickname, projectId);
-
-        if (optionalProjectMember.isEmpty()) {
-            log.error("Attempt to exclude user who is not a member of the project with id: {}", projectId);
-            throw new AppException(
-                    String.format("The user with the nickname %s is not a member of the project with id %s, so you " +
-                            "cannot exclude him", nickname, projectId),
-                    HttpStatus.BAD_REQUEST
-            );
-        } else {
-            return optionalProjectMember.get();
-        }
     }
 }

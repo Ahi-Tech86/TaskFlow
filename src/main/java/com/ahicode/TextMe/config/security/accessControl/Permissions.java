@@ -34,7 +34,7 @@ public class Permissions {
             managerPermissions.put("tasks", Map.of(
                     Action.CREATE_TASK, (user, task) -> true,
                     Action.READ_TASK, (user, task) -> true,
-                    Action.ASSIGN_TASK, (PermissionCheck<ProjectMemberEntity>) (user, member) -> !member.getRole().equals(ProjectRole.STAKEHOLDER) || !member.getRole().equals(ProjectRole.PROJECT_MANAGER),
+                    Action.ASSIGN_TASK, (PermissionCheck<ProjectMemberEntity>) (user, member) -> !member.getRole().equals(ProjectRole.STAKEHOLDER) && !member.getRole().equals(ProjectRole.PROJECT_MANAGER),
                     Action.UPDATE_INFO_OF_TASK, (user, task) -> true,
                     Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.NEEDS_APPROVAL),
                     Action.DELETE_TASK, (user, task) -> true
