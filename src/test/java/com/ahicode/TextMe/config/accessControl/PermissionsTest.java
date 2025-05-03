@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PermissionCheckerTest {
+public class PermissionsTest {
 
     @InjectMocks
     private PermissionChecker permissionChecker;
@@ -194,17 +194,8 @@ public class PermissionCheckerTest {
 
             @Test
             void shouldHavePermissionsForChangeTaskStatus() {
-                TaskEntity task = TaskEntity.builder()
-                        .id(1L)
-                        .title("title")
-                        .description("description")
-                        .status(TaskStatus.NEEDS_APPROVAL)
-                        .priority(TaskPriority.LOW)
-                        .createAt(LocalDateTime.now())
-                        .updateAt(LocalDateTime.now())
-                        .assignedId(1L)
-                        .creatorId(1L)
-                        .build();
+                TaskEntity task = makeTaskEntity();
+                task.setStatus(TaskStatus.NEEDS_APPROVAL);
 
                 boolean hasPermission = permissionChecker.hasPermission(
                         projectManager, "tasks", Action.CHANGE_STATUS_OF_TASK, task
@@ -214,17 +205,7 @@ public class PermissionCheckerTest {
 
             @Test
             void shouldDontHavePermissionsForChangeTaskStatus() {
-                TaskEntity task = TaskEntity.builder()
-                        .id(1L)
-                        .title("title")
-                        .description("description")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .priority(TaskPriority.LOW)
-                        .createAt(LocalDateTime.now())
-                        .updateAt(LocalDateTime.now())
-                        .assignedId(1L)
-                        .creatorId(1L)
-                        .build();
+                TaskEntity task = makeTaskEntity();
 
                 boolean hasPermission = permissionChecker.hasPermission(
                         projectManager, "tasks", Action.CHANGE_STATUS_OF_TASK, task
@@ -348,29 +329,11 @@ public class PermissionCheckerTest {
 
             @Test
             void shouldHavePermissionsForChangeTaskStatus() {
-                TaskEntity firstTask = TaskEntity.builder()
-                        .id(1L)
-                        .title("title")
-                        .description("description")
-                        .status(TaskStatus.NEEDS_APPROVAL)
-                        .priority(TaskPriority.LOW)
-                        .createAt(LocalDateTime.now())
-                        .updateAt(LocalDateTime.now())
-                        .assignedId(2L)
-                        .creatorId(1L)
-                        .build();
+                TaskEntity firstTask = makeTaskEntity();
+                firstTask.setStatus(TaskStatus.NEEDS_APPROVAL);
+                firstTask.setAssignedId(2L);
 
-                TaskEntity secondTask = TaskEntity.builder()
-                        .id(1L)
-                        .title("title")
-                        .description("description")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .priority(TaskPriority.LOW)
-                        .createAt(LocalDateTime.now())
-                        .updateAt(LocalDateTime.now())
-                        .assignedId(1L)
-                        .creatorId(1L)
-                        .build();
+                TaskEntity secondTask = makeTaskEntity();
 
                 boolean hasPermission = permissionChecker.hasPermission(teamLead, "tasks", Action.CHANGE_STATUS_OF_TASK, firstTask);
                 assertTrue(hasPermission);
@@ -381,17 +344,8 @@ public class PermissionCheckerTest {
 
             @Test
             void shouldDontHavePermissionsForChangeTaskStatus() {
-                TaskEntity task = TaskEntity.builder()
-                        .id(1L)
-                        .title("title")
-                        .description("description")
-                        .status(TaskStatus.IN_PROGRESS)
-                        .priority(TaskPriority.LOW)
-                        .createAt(LocalDateTime.now())
-                        .updateAt(LocalDateTime.now())
-                        .assignedId(2L)
-                        .creatorId(1L)
-                        .build();
+                TaskEntity task = makeTaskEntity();
+                task.setAssignedId(2L);
 
                 boolean hasPermission = permissionChecker.hasPermission(teamLead, "tasks", Action.CHANGE_STATUS_OF_TASK, task);
                 assertFalse(hasPermission);
@@ -403,5 +357,219 @@ public class PermissionCheckerTest {
                 assertTrue(hasPermission);
             }
         }
+    }
+
+    @Nested
+    class ProjectMemberPermissionsTest {
+
+        @Nested
+        class ProjectResource {
+
+            @Test
+            void shouldHavePermissionsForView() {
+                boolean hasPermission = permissionChecker.hasPermission(projectMember, "project", Action.READ_PROJECT, null);
+                assertTrue(hasPermission);
+            }
+
+            @Test
+            void shouldDontHavePermissionsForUpdate() {
+                boolean hasPermission = permissionChecker.hasPermission(projectMember, "project", Action.UPDATE_PROJECT, null);
+                assertFalse(hasPermission);
+            }
+
+            @Test
+            void shouldDontHavePermissionsForDelete() {
+                boolean hasPermission = permissionChecker.hasPermission(projectMember, "project", Action.DELETE_PROJECT, null);
+                assertFalse(hasPermission);
+            }
+        }
+
+        @Nested
+        class ProjectMemberResource {
+
+            @Test
+            void shouldHavePermissionsForViewListOfMembers() {
+                boolean hasPermission = permissionChecker.hasPermission(
+                        projectMember, "members", Action.VIEW_LIST_OF_MEMBERS, null
+                );
+                assertTrue(hasPermission);
+            }
+
+            @Test
+            void shouldDontHavePermissionsForInviteAndExcludeMember() {
+                boolean hasPermissionForInviteNewMember = permissionChecker.hasPermission(
+                        projectMember, "members", Action.INVITE_MEMBER, null
+                );
+                assertFalse(hasPermissionForInviteNewMember);
+
+                boolean hasPermissionForExcludeMember = permissionChecker.hasPermission(
+                        projectMember, "members", Action.EXCLUDE_MEMBER, null
+                );
+                assertFalse(hasPermissionForExcludeMember);
+            }
+
+            @Test
+            void shouldDontHavePermissionsForChangeMemberRole() {
+                boolean hasPermission = permissionChecker.hasPermission(
+                        projectMember, "members", Action.CHANGE_MEMBER_ROLE, null
+                );
+                assertFalse(hasPermission);
+            }
+        }
+
+        @Nested
+        class TaskResource {
+
+            @Test
+            void shouldHavePermissionsForCreateTask() {
+                boolean hasPermission = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.CREATE_TASK, null
+                );
+                assertTrue(hasPermission);
+            }
+
+            @Test
+            void shouldHavePermissionsForViewTask() {
+                boolean hasPermission = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.READ_TASK, null
+                );
+                assertTrue(hasPermission);
+            }
+
+            @Test
+            void shouldHavePermissionsForUpdateTaskInfo() {
+                TaskEntity firstTask = TaskEntity.builder()
+                        .id(1L)
+                        .title("title")
+                        .description("description")
+                        .status(TaskStatus.TO_DO)
+                        .priority(TaskPriority.MEDIUM)
+                        .dueDate(LocalDate.now())
+                        .createAt(LocalDateTime.now())
+                        .updateAt(LocalDateTime.now())
+                        .assignedId(1L)
+                        .creatorId(2L)
+                        .build();
+
+                TaskEntity secondTask = TaskEntity.builder()
+                        .id(1L)
+                        .title("title")
+                        .description("description")
+                        .status(TaskStatus.TO_DO)
+                        .priority(TaskPriority.MEDIUM)
+                        .dueDate(LocalDate.now())
+                        .createAt(LocalDateTime.now())
+                        .updateAt(LocalDateTime.now())
+                        .assignedId(1L)
+                        .creatorId(1L)
+                        .build();
+
+                boolean hasPermission = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.UPDATE_INFO_OF_TASK, firstTask
+                );
+                assertTrue(hasPermission);
+
+                boolean hasPermission2 = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.UPDATE_INFO_OF_TASK, secondTask
+                );
+                assertTrue(hasPermission2);
+            }
+
+            @Test
+            void shouldHavePermissionsForChangeTaskStatus() {
+                TaskEntity firstTask = makeTaskEntity();
+                firstTask.setCreatorId(2L);
+
+                TaskEntity secondTask = makeTaskEntity();
+
+                boolean hasPermissionToUpdateTaskWithToDoStatus = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.CHANGE_STATUS_OF_TASK, firstTask
+                );
+                assertTrue(hasPermissionToUpdateTaskWithToDoStatus);
+
+                boolean hasPermissionToUpdateTaskWithInProgressStatus = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.CHANGE_STATUS_OF_TASK, secondTask
+                );
+                assertTrue(hasPermissionToUpdateTaskWithInProgressStatus);
+            }
+
+            @Test
+            void shouldDontHavePermissionsForChangeTaskStatus() {
+                TaskEntity firstTask = makeTaskEntity();
+                firstTask.setStatus(TaskStatus.NEEDS_APPROVAL);
+
+                TaskEntity secondTask = makeTaskEntity();
+                secondTask.setStatus(TaskStatus.DONE);
+
+                TaskEntity thirdTask = makeTaskEntity();
+                thirdTask.setStatus(TaskStatus.OVERDUE);
+
+                boolean hasPermissionToChangeTaskStatusWithNeedsApprovalStatus = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.CHANGE_STATUS_OF_TASK, firstTask
+                );
+                assertFalse(hasPermissionToChangeTaskStatusWithNeedsApprovalStatus);
+
+                boolean hasPermissionToChangeTaskStatusWithDoneStatus = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.CHANGE_STATUS_OF_TASK, secondTask
+                );
+                assertFalse(hasPermissionToChangeTaskStatusWithDoneStatus);
+
+                boolean hasPermissionToChangeTaskStatusWithOverdueStatus = permissionChecker.hasPermission(
+                        projectMember, "tasks", Action.CHANGE_STATUS_OF_TASK, thirdTask
+                );
+                assertFalse(hasPermissionToChangeTaskStatusWithOverdueStatus);
+            }
+        }
+    }
+
+    @Nested
+    class StakeholderPermissionsTest {
+
+        @Nested
+        class ProjectResource {
+
+            @Test
+            void shouldHavePermissionsForView() {
+                boolean hasPermission = permissionChecker.hasPermission(stakeholder, "project", Action.READ_PROJECT, null);
+                assertTrue(hasPermission);
+            }
+
+            @Test
+            void shouldDontHavePermissionsForDelete() {
+                boolean hasPermission = permissionChecker.hasPermission(stakeholder, "project", Action.DELETE_PROJECT, null);
+                assertFalse(hasPermission);
+            }
+        }
+
+        @Nested
+        class TaskResource {
+
+            @Test
+            void shouldHavePermissionsForView() {
+                boolean hasPermission = permissionChecker.hasPermission(stakeholder, "tasks", Action.READ_TASK, null);
+                assertTrue(hasPermission);
+            }
+
+            @Test
+            void shouldDontHavePermissionsForDelete() {
+                boolean hasPermission = permissionChecker.hasPermission(stakeholder, "tasks", Action.DELETE_TASK, null);
+                assertFalse(hasPermission);
+            }
+        }
+    }
+
+    private TaskEntity makeTaskEntity() {
+        return TaskEntity.builder()
+                .id(1L)
+                .title("title")
+                .description("description")
+                .status(TaskStatus.TO_DO)
+                .priority(TaskPriority.MEDIUM)
+                .dueDate(LocalDate.now())
+                .createAt(LocalDateTime.now())
+                .updateAt(LocalDateTime.now())
+                .assignedId(1L)
+                .creatorId(1L)
+                .build();
     }
 }

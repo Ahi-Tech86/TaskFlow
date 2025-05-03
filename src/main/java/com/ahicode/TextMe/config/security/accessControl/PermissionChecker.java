@@ -1,7 +1,6 @@
 package com.ahicode.TextMe.config.security.accessControl;
 
 import com.ahicode.TextMe.model.entity.ProjectMemberEntity;
-import com.ahicode.TextMe.model.entity.UserEntity;
 import com.ahicode.TextMe.model.enums.Action;
 import com.ahicode.TextMe.model.enums.ProjectRole;
 import lombok.RequiredArgsConstructor;
