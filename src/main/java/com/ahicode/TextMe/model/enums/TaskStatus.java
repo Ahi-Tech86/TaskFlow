@@ -14,7 +14,7 @@ public enum TaskStatus {
         try {
             return TaskStatus.valueOf(name.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new AppException(String.format("Task priority name: %s does not exist", name), HttpStatus.BAD_REQUEST);
+            throw new AppException(String.format("Task status name: %s does not exist", name), HttpStatus.BAD_REQUEST);
         }
     }
 
