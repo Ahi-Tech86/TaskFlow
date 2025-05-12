@@ -6,4 +6,5 @@ public interface UserValidationService {
     void isEmailUnique(String email);
     void isNicknameUnique(String nickname);
     UserEntity isUserExistsByEmail(String email);
+    UserEntity isUserExistsByNickname(String nickname);
 }

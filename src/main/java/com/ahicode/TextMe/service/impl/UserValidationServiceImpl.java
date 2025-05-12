@@ -39,6 +39,16 @@ public class UserValidationServiceImpl implements UserValidationService {
         );
     }
 
+    @Override
+    public UserEntity isUserExistsByNickname(String nickname) {
+        return repository.findByNickname(nickname).orElseThrow(
+                () -> {
+                    log.error("Attempt to log into an account with non-existent nickname: {}", nickname);
+                    throw new AppException(String.format("User with nickname %s doesn't exists", nickname), HttpStatus.NOT_FOUND);
+                }
+        );
+    }
+
     private void checkUniqueness(
             String varName, String value, Function<String, Optional<UserEntity>> findFunction, String errorMessage
     ) {

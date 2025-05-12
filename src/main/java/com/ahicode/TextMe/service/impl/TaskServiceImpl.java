@@ -8,6 +8,7 @@ import com.ahicode.TextMe.model.dto.task.TaskUpdateRequestDto;
 import com.ahicode.TextMe.model.entity.ProjectEntity;
 import com.ahicode.TextMe.model.entity.ProjectMemberEntity;
 import com.ahicode.TextMe.model.entity.TaskEntity;
+import com.ahicode.TextMe.model.entity.UserEntity;
 import com.ahicode.TextMe.model.enums.Action;
 import com.ahicode.TextMe.model.enums.TaskPriority;
 import com.ahicode.TextMe.model.enums.TaskStatus;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,6 +37,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskEntityFactory entityFactory;
     private final PermissionChecker permissionChecker;
     private final ProjectMemberRepository memberRepository;
+    private final UserValidationServiceImpl userValidationService;
     private final ProjectValidationService projectValidationService;
 
     @Override
@@ -87,6 +90,8 @@ public class TaskServiceImpl implements TaskService {
                 }
         );
 
+        isTaskBelongsToProject(projectId, taskId);
+
         if (requestDto.getTitle() != null) {
             task.setTitle(requestDto.getTitle());
         }
@@ -133,6 +138,8 @@ public class TaskServiceImpl implements TaskService {
                 }
         );
 
+        isTaskBelongsToProject(projectId, taskId);
+
         boolean canReadTask = permissionChecker.hasPermission(member, "tasks", Action.READ_TASK, null);
         if (!canReadTask) {
             log.error("Attempt to change resource with not sufficient project permissions");
@@ -160,6 +167,8 @@ public class TaskServiceImpl implements TaskService {
                 }
         );
 
+        isTaskBelongsToProject(projectId, taskId);
+
         boolean canChangeStatus = permissionChecker.hasPermission(member, "tasks", Action.CHANGE_STATUS_OF_TASK, task);
         if (!canChangeStatus) {
             log.error("Attempt to change resource with not sufficient project permissions");
@@ -181,6 +190,70 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTask(Long projectId, Long taskId, Long userId) {
+        projectValidationService.isProjectExistsById(projectId);
 
+        ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+
+        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
+                () -> {
+                    log.error("Attempt to update non-existent task information with ID {}", taskId);
+                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
+                }
+        );
+
+        isTaskBelongsToProject(projectId, taskId);
+
+        boolean canDeleteTask = permissionChecker.hasPermission(member, "tasks", Action.DELETE_TASK, task);
+        if (!canDeleteTask) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        taskRepository.delete(task);
+        log.info("Task with ID {} was successfully deleted", task.getId());
+    }
+
+    @Override
+    public TaskDto assignTask(Long projectId, Long taskId, Long userId, String assignedTo) {
+        projectValidationService.isProjectExistsById(projectId);
+
+        ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+
+        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
+                () -> {
+                    log.error("Attempt to update non-existent task information with ID {}", taskId);
+                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
+                }
+        );
+
+        isTaskBelongsToProject(projectId, taskId);
+
+        UserEntity assignedToUser = userValidationService.isUserExistsByNickname(assignedTo);
+
+        boolean canAssignTask = permissionChecker.hasPermission(member, "tasks", Action.ASSIGN_TASK, task);
+        if (!canAssignTask) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        task.setAssignedId(assignedToUser.getId());
+        log.info("Task with ID {} was assigned to user with ID {}", taskId, assignedToUser.getId());
+
+        String creatorNickname = memberRepository
+                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
+
+        return dtoFactory.makeTaskDto(task, assignedToUser.getNickname(), creatorNickname);
+    }
+
+    private void isTaskBelongsToProject(Long projectId, Long taskId) {
+        Optional<TaskEntity> optionalTask = taskRepository.getOptionalTaskByIdAndProjectId(projectId, taskId);
+
+        if (optionalTask.isEmpty()) {
+            log.error("Attempt to take action on a task that doesn't belong to the project {}", projectId);
+            throw new AppException(
+                    String.format("Task with ID %s doesn't belong to project with ID %s", taskId, projectId),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
     }
 }
