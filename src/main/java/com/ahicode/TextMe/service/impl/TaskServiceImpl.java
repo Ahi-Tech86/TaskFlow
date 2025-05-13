@@ -16,6 +16,7 @@ import com.ahicode.TextMe.repository.ProjectMemberRepository;
 import com.ahicode.TextMe.repository.TaskRepository;
 import com.ahicode.TextMe.service.ProjectValidationService;
 import com.ahicode.TextMe.service.TaskService;
+import com.ahicode.TextMe.service.TaskValidationService;
 import com.ahicode.TextMe.service.factory.task.TaskDtoFactory;
 import com.ahicode.TextMe.service.factory.task.TaskEntityFactory;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskEntityFactory entityFactory;
     private final PermissionChecker permissionChecker;
     private final ProjectMemberRepository memberRepository;
+    private final TaskValidationService taskValidationService;
     private final UserValidationServiceImpl userValidationService;
     private final ProjectValidationService projectValidationService;
 
@@ -83,14 +85,8 @@ public class TaskServiceImpl implements TaskService {
 
         ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
 
-        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
-                () -> {
-                    log.error("Attempt to update non-existent task information with ID {}", taskId);
-                    return new AppException(String.format("Task with ID %s doesn't exists", taskId), HttpStatus.BAD_REQUEST);
-                }
-        );
-
-        isTaskBelongsToProject(projectId, taskId);
+        TaskEntity task = taskValidationService.isTaskExistsById(taskId);
+        taskValidationService.isTaskBelongsToProject(projectId, taskId);
 
         if (requestDto.getTitle() != null) {
             task.setTitle(requestDto.getTitle());
@@ -131,14 +127,8 @@ public class TaskServiceImpl implements TaskService {
 
         ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
 
-        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
-                () -> {
-                    log.error("Attempt to update non-existent task information with ID {}", taskId);
-                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
-                }
-        );
-
-        isTaskBelongsToProject(projectId, taskId);
+        TaskEntity task = taskValidationService.isTaskExistsById(taskId);
+        taskValidationService.isTaskBelongsToProject(projectId, taskId);
 
         boolean canReadTask = permissionChecker.hasPermission(member, "tasks", Action.READ_TASK, null);
         if (!canReadTask) {
@@ -160,14 +150,8 @@ public class TaskServiceImpl implements TaskService {
 
         ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
 
-        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
-                () -> {
-                    log.error("Attempt to update non-existent task information with ID {}", taskId);
-                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
-                }
-        );
-
-        isTaskBelongsToProject(projectId, taskId);
+        TaskEntity task = taskValidationService.isTaskExistsById(taskId);
+        taskValidationService.isTaskBelongsToProject(projectId, taskId);
 
         boolean canChangeStatus = permissionChecker.hasPermission(member, "tasks", Action.CHANGE_STATUS_OF_TASK, task);
         if (!canChangeStatus) {
@@ -194,14 +178,8 @@ public class TaskServiceImpl implements TaskService {
 
         ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
 
-        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
-                () -> {
-                    log.error("Attempt to update non-existent task information with ID {}", taskId);
-                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
-                }
-        );
-
-        isTaskBelongsToProject(projectId, taskId);
+        TaskEntity task = taskValidationService.isTaskExistsById(taskId);
+        taskValidationService.isTaskBelongsToProject(projectId, taskId);
 
         boolean canDeleteTask = permissionChecker.hasPermission(member, "tasks", Action.DELETE_TASK, task);
         if (!canDeleteTask) {
@@ -219,18 +197,13 @@ public class TaskServiceImpl implements TaskService {
 
         ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
 
-        TaskEntity task = taskRepository.findById(taskId).orElseThrow(
-                () -> {
-                    log.error("Attempt to update non-existent task information with ID {}", taskId);
-                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
-                }
-        );
-
-        isTaskBelongsToProject(projectId, taskId);
+        TaskEntity task = taskValidationService.isTaskExistsById(taskId);
+        taskValidationService.isTaskBelongsToProject(projectId, taskId);
 
         UserEntity assignedToUser = userValidationService.isUserExistsByNickname(assignedTo);
+        ProjectMemberEntity assignedToMember = memberRepository.getProjectMemberEntityByProjectIdAndUserId(assignedToUser.getId(), projectId);
 
-        boolean canAssignTask = permissionChecker.hasPermission(member, "tasks", Action.ASSIGN_TASK, task);
+        boolean canAssignTask = permissionChecker.hasPermission(member, "tasks", Action.ASSIGN_TASK, assignedToMember);
         if (!canAssignTask) {
             log.error("Attempt to change resource with not sufficient project permissions");
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
@@ -243,17 +216,5 @@ public class TaskServiceImpl implements TaskService {
                 .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
 
         return dtoFactory.makeTaskDto(task, assignedToUser.getNickname(), creatorNickname);
-    }
-
-    private void isTaskBelongsToProject(Long projectId, Long taskId) {
-        Optional<TaskEntity> optionalTask = taskRepository.getOptionalTaskByIdAndProjectId(projectId, taskId);
-
-        if (optionalTask.isEmpty()) {
-            log.error("Attempt to take action on a task that doesn't belong to the project {}", projectId);
-            throw new AppException(
-                    String.format("Task with ID %s doesn't belong to project with ID %s", taskId, projectId),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
     }
 }

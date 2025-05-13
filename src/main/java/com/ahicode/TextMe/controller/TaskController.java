@@ -89,4 +89,17 @@ public class TaskController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{taskId}/assign")
+    public ResponseEntity<TaskDto> assignTask(
+            HttpServletRequest request,
+            @PathVariable("projectId") Long projectId,
+            @PathVariable("taskId") Long taskId,
+            @RequestParam("nickname") String nickname
+    ) {
+        String accessToken = cookieService.extractCookieValueFromCookieByName(request, accessTokenCookieName);
+        Long userId = jwtService.extractUserIdFromAccessToken(accessToken);
+
+        return ResponseEntity.ok(taskService.assignTask(projectId, taskId, userId, nickname));
+    }
 }
