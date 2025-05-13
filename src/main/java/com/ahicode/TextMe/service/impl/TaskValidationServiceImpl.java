@@ -23,7 +23,7 @@ public class TaskValidationServiceImpl implements TaskValidationService {
         return taskRepository.findById(taskId).orElseThrow(
                 () -> {
                     log.error("Attempt to update non-existent task information with ID {}", taskId);
-                    return new AppException(String.format("Task with ID %s doesn't exists"), HttpStatus.BAD_REQUEST);
+                    return new AppException(String.format("Task with ID %s doesn't exists", taskId), HttpStatus.BAD_REQUEST);
                 }
         );
     }

@@ -1,5 +1,6 @@
-package com.ahicode.TextMe.exception;
+package com.ahicode.TextMe.unit.exception;
 
+import com.ahicode.TextMe.exception.AppException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 

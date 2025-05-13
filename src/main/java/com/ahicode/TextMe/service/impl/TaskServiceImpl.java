@@ -17,6 +17,7 @@ import com.ahicode.TextMe.repository.TaskRepository;
 import com.ahicode.TextMe.service.ProjectValidationService;
 import com.ahicode.TextMe.service.TaskService;
 import com.ahicode.TextMe.service.TaskValidationService;
+import com.ahicode.TextMe.service.UserValidationService;
 import com.ahicode.TextMe.service.factory.task.TaskDtoFactory;
 import com.ahicode.TextMe.service.factory.task.TaskEntityFactory;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,7 +39,7 @@ public class TaskServiceImpl implements TaskService {
     private final PermissionChecker permissionChecker;
     private final ProjectMemberRepository memberRepository;
     private final TaskValidationService taskValidationService;
-    private final UserValidationServiceImpl userValidationService;
+    private final UserValidationService userValidationService;
     private final ProjectValidationService projectValidationService;
 
     @Override
@@ -145,6 +145,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDto changeStatus(Long projectId, Long taskId, Long userId) {
         projectValidationService.isProjectExistsById(projectId);
 
@@ -173,6 +174,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public void deleteTask(Long projectId, Long taskId, Long userId) {
         projectValidationService.isProjectExistsById(projectId);
 
@@ -192,6 +194,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDto assignTask(Long projectId, Long taskId, Long userId, String assignedTo) {
         projectValidationService.isProjectExistsById(projectId);
 

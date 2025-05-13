@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.config.jwt;
+package com.ahicode.TextMe.unit.config.jwt;
 
 import com.ahicode.TextMe.config.security.jwt.JwtKeyProvider;
 import io.jsonwebtoken.security.WeakKeyException;

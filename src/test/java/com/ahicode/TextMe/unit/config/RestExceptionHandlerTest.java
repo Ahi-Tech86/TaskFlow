@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.config;
+package com.ahicode.TextMe.unit.config;
 
 import com.ahicode.TextMe.config.security.RestExceptionHandler;
 import com.ahicode.TextMe.exception.AppException;

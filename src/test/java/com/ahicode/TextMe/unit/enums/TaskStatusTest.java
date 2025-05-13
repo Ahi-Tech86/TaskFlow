@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.enums;
+package com.ahicode.TextMe.unit.enums;
 
 import com.ahicode.TextMe.exception.AppException;
 import com.ahicode.TextMe.model.enums.TaskStatus;

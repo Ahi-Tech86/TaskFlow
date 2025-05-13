@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.service;
+package com.ahicode.TextMe.unit.service;
 
 import com.ahicode.TextMe.service.impl.CookieServiceImpl;
 import jakarta.servlet.http.Cookie;

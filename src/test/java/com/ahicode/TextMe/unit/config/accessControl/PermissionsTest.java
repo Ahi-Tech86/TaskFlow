@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.config.accessControl;
+package com.ahicode.TextMe.unit.config.accessControl;
 
 import com.ahicode.TextMe.config.security.accessControl.PermissionChecker;
 import com.ahicode.TextMe.config.security.accessControl.Permissions;
