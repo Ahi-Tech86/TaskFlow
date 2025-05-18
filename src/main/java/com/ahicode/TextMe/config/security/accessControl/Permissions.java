@@ -37,6 +37,7 @@ public class Permissions {
                     Action.ASSIGN_TASK, (PermissionCheck<ProjectMemberEntity>) (user, member) -> !member.getRole().equals(ProjectRole.STAKEHOLDER) && !member.getRole().equals(ProjectRole.PROJECT_MANAGER),
                     Action.UPDATE_INFO_OF_TASK, (user, task) -> true,
                     Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.NEEDS_APPROVAL),
+                    Action.VIEW_LIST_OF_TASKS, (user, task) -> true,
                     Action.DELETE_TASK, (user, task) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.PROJECT_MANAGER, managerPermissions);
@@ -58,6 +59,7 @@ public class Permissions {
                     Action.ASSIGN_TASK, (PermissionCheck<ProjectMemberEntity>) (user, member) -> member.getRole().equals(ProjectRole.PROJECT_MEMBER),
                     Action.UPDATE_INFO_OF_TASK, (user, task) -> true,
                     Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (member, task) -> task.getStatus().equals(TaskStatus.NEEDS_APPROVAL) || task.getAssignedId().equals(member.getUser().getId()),
+                    Action.VIEW_LIST_OF_TASKS, (user, task) -> true,
                     Action.DELETE_TASK, (user, task) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.TEAM_LEAD, teamLeadPermissions);
@@ -76,7 +78,8 @@ public class Permissions {
                     Action.CREATE_TASK, (user, task) -> true,
                     Action.READ_TASK, (user, task) -> true,
                     Action.UPDATE_INFO_OF_TASK, (PermissionCheck<TaskEntity>) (member, task) -> task.getAssignedId().equals(member.getUser().getId()) || task.getCreatorId().equals(member.getUser().getId()),
-                    Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.TO_DO) || task.getStatus().equals(TaskStatus.IN_PROGRESS)
+                    Action.CHANGE_STATUS_OF_TASK, (PermissionCheck<TaskEntity>) (user, task) -> task.getStatus().equals(TaskStatus.TO_DO) || task.getStatus().equals(TaskStatus.IN_PROGRESS),
+                    Action.VIEW_LIST_OF_TASKS, (user, task) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.PROJECT_MEMBER, memberPermissions);
         }

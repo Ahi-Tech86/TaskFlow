@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @Validated
 @RestController
@@ -101,5 +103,15 @@ public class TaskController {
         Long userId = jwtService.extractUserIdFromAccessToken(accessToken);
 
         return ResponseEntity.ok(taskService.assignTask(projectId, taskId, userId, nickname));
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<TaskDto>> getAllProjectTasks(
+            HttpServletRequest request, @PathVariable("projectId") Long projectId
+    ) {
+        String accessToken = cookieService.extractCookieValueFromCookieByName(request, accessTokenCookieName);
+        Long userId = jwtService.extractUserIdFromAccessToken(accessToken);
+
+        return ResponseEntity.ok(taskService.getAllProjectTasks(projectId, userId));
     }
 }

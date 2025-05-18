@@ -27,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -219,5 +221,24 @@ public class TaskServiceImpl implements TaskService {
                 .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
 
         return dtoFactory.makeTaskDto(task, assignedToUser.getNickname(), creatorNickname);
+    }
+
+    @Override
+    public List<TaskDto> getAllProjectTasks(Long projectId, Long userId) {
+        projectValidationService.isProjectExistsById(projectId);
+
+        ProjectMemberEntity member = memberRepository.getProjectMemberEntityByProjectIdAndUserId(userId, projectId);
+
+        boolean canViewListOfTasks = permissionChecker.hasPermission(member, "tasks", Action.VIEW_LIST_OF_TASKS, null);
+        if (!canViewListOfTasks) {
+            log.error("Attempt to change resource with not sufficient project permissions");
+            throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
+        }
+
+        List<TaskEntity> tasksList = taskRepository.findTasksByProjectId(projectId);
+
+        return tasksList.stream()
+                .map(task -> dtoFactory.makeTaskDto(task, String.valueOf(task.getAssignedId()), String.valueOf(task.getCreatorId())))
+                .collect(Collectors.toList());
     }
 }

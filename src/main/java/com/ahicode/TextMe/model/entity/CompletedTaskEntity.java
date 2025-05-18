@@ -1,7 +1,7 @@
 package com.ahicode.TextMe.model.entity;
 
+import com.ahicode.TextMe.model.enums.CompletionTaskStatus;
 import com.ahicode.TextMe.model.enums.TaskPriority;
-import com.ahicode.TextMe.model.enums.TaskStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -11,13 +11,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
 @Setter
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tasks")
-public class TaskEntity {
+@Table(name = "completed_task")
+public class CompletedTaskEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,8 +32,8 @@ public class TaskEntity {
     private String description;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    private TaskStatus status;
+    @Column(name = "completion_status")
+    private CompletionTaskStatus status;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -42,6 +42,10 @@ public class TaskEntity {
     @NotNull
     @Column(name = "due_date")
     private LocalDate dueDate;
+
+    @NotNull
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 
     @NotNull
     @Column(name = "create_at")
@@ -63,20 +67,4 @@ public class TaskEntity {
     @NotNull
     @Column(name = "creator_id")
     private Long creatorId;
-
-    @Override
-    public String toString() {
-        return "TaskEntity{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", status='" + status + '\'' +
-                ", priority='" + priority + '\'' +
-                ", dueDate=" + dueDate +
-                ", createAt=" + createAt +
-                ", updateAt=" + updateAt +
-                ", assignedId=" + assignedId +
-                ", creatorId=" + creatorId +
-                '}';
-    }
 }
