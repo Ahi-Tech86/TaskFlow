@@ -138,12 +138,7 @@ public class TaskServiceImpl implements TaskService {
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
         }
 
-        String assignedNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getUser().getNickname();
-        String creatorNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
-
-        return dtoFactory.makeTaskDto(task, assignedNickname, creatorNickname);
+        return taskRepository.findTaskDtoById(taskId);
     }
 
     @Override
@@ -166,13 +161,7 @@ public class TaskServiceImpl implements TaskService {
         TaskEntity savedTask = taskRepository.save(task);
         log.info("Task information with ID {} was successfully updated", savedTask.getId());
 
-        String assignedNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getUser().getNickname();
-
-        String creatorNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
-
-        return dtoFactory.makeTaskDto(savedTask, assignedNickname, creatorNickname);
+        return taskRepository.findTaskDtoById(taskId);
     }
 
     @Override
@@ -217,10 +206,7 @@ public class TaskServiceImpl implements TaskService {
         task.setAssignedId(assignedToUser.getId());
         log.info("Task with ID {} was assigned to user with ID {}", taskId, assignedToUser.getId());
 
-        String creatorNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
-
-        return dtoFactory.makeTaskDto(task, assignedToUser.getNickname(), creatorNickname);
+        return taskRepository.findTaskDtoById(taskId);
     }
 
     @Override
@@ -235,10 +221,6 @@ public class TaskServiceImpl implements TaskService {
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
         }
 
-        List<TaskEntity> tasksList = taskRepository.findTasksByProjectId(projectId);
-
-        return tasksList.stream()
-                .map(task -> dtoFactory.makeTaskDto(task, String.valueOf(task.getAssignedId()), String.valueOf(task.getCreatorId())))
-                .collect(Collectors.toList());
+        return taskRepository.findTaskDtoByProjectId(projectId);
     }
 }
