@@ -33,6 +33,7 @@ public class CompletedTaskEntity {
 
     @NotNull
     @Column(name = "completion_status")
+    @Enumerated(EnumType.STRING)
     private CompletionTaskStatus status;
 
     @NotNull
@@ -50,10 +51,6 @@ public class CompletedTaskEntity {
     @NotNull
     @Column(name = "create_at")
     private LocalDateTime createAt;
-
-    @NotNull
-    @Column(name = "update_at")
-    private LocalDateTime updateAt;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

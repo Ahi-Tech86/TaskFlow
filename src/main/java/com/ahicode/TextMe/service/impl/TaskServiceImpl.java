@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -114,13 +113,7 @@ public class TaskServiceImpl implements TaskService {
         TaskEntity savedTask = taskRepository.save(task);
         log.info("Task information with ID {} was successfully updated", savedTask.getId());
 
-        String assignedNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getAssignedId(), projectId).getUser().getNickname();
-
-        String creatorNickname = memberRepository
-                .getProjectMemberEntityByProjectIdAndUserId(task.getCreatorId(), projectId).getUser().getNickname();
-
-        return dtoFactory.makeTaskDto(savedTask, assignedNickname, creatorNickname);
+        return taskRepository.findTaskDtoById(taskId);
     }
 
     @Override
@@ -157,6 +150,7 @@ public class TaskServiceImpl implements TaskService {
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
         }
 
+        task.setUpdateAt(LocalDateTime.now());
         task.setStatus(TaskStatus.changeNextStatus(task.getStatus()));
         TaskEntity savedTask = taskRepository.save(task);
         log.info("Task information with ID {} was successfully updated", savedTask.getId());
@@ -203,6 +197,7 @@ public class TaskServiceImpl implements TaskService {
             throw new AppException("User does not have sufficient permissions", HttpStatus.FORBIDDEN);
         }
 
+        task.setUpdateAt(LocalDateTime.now());
         task.setAssignedId(assignedToUser.getId());
         log.info("Task with ID {} was assigned to user with ID {}", taskId, assignedToUser.getId());
 
