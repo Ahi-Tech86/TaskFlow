@@ -37,6 +37,19 @@ services:
     volumes:
       - cache_data:/data
 
+  kuyanmq:
+    image: rabbitmq:3-management
+    container_name: kuyanmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${KUYAN_USER}
+      RABBITMQ_DEFAULT_PASS: ${KUYAN_PASS}
+    volumes:
+      - kuyanmq_data:/var/lib/rabbitmq
+
 volumes:
   cache_data:
   app_db_data:
+  kuyanmq_data:

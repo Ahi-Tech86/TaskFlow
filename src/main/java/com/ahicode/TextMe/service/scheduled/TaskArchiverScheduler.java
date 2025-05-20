@@ -1,4 +1,4 @@
-package com.ahicode.TextMe.service.factory.scheduled;
+package com.ahicode.TextMe.service.scheduled;
 
 import com.ahicode.TextMe.model.entity.CompletedTaskEntity;
 import com.ahicode.TextMe.model.entity.TaskEntity;

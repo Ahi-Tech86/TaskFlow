@@ -40,6 +40,9 @@ public class Permissions {
                     Action.VIEW_LIST_OF_TASKS, (user, task) -> true,
                     Action.DELETE_TASK, (user, task) -> true
             ));
+            managerPermissions.put("reports", Map.of(
+                    Action.GET_REPORT, (user, task) -> true
+            ));
             ROLES_PERMISSIONS.put(ProjectRole.PROJECT_MANAGER, managerPermissions);
         }
 
@@ -92,6 +95,9 @@ public class Permissions {
             ));
             stakeholderPermissions.put("tasks", Map.of(
                     Action.READ_TASK, (user, task) -> true
+            ));
+            stakeholderPermissions.put("reports", Map.of(
+                    Action.GET_REPORT, (user, task) -> true
             ));
             ROLES_PERMISSIONS.put(ProjectRole.STAKEHOLDER, stakeholderPermissions);
         }

@@ -4,7 +4,7 @@ import com.ahicode.TextMe.model.entity.CompletedTaskEntity;
 import com.ahicode.TextMe.model.entity.TaskEntity;
 import com.ahicode.TextMe.repository.CompletedTaskRepository;
 import com.ahicode.TextMe.repository.TaskRepository;
-import com.ahicode.TextMe.service.factory.scheduled.TaskArchiverScheduler;
+import com.ahicode.TextMe.service.scheduled.TaskArchiverScheduler;
 import com.ahicode.TextMe.service.factory.task.CompletedTaskEntityFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -15,5 +15,6 @@ public enum Action {
     UPDATE_INFO_OF_TASK,
     CHANGE_STATUS_OF_TASK,
     VIEW_LIST_OF_TASKS,
-    DELETE_TASK;
+    DELETE_TASK,
+    GET_REPORT;
 }
