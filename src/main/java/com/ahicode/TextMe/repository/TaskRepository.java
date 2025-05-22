@@ -40,4 +40,16 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
                     "WHERE t.project.id = :projectId"
     )
     List<TaskDto> findTaskDtoByProjectId(@Param("projectId") Long projectId);
+
+    @Query("SELECT COUNT(*) FROM TaskEntity t WHERE t.status = 'IN_PROGRESS' AND t.project.id = :projectId")
+    Long countInProgressTasksByProjectId(@Param("projectId") Long projectId);
+
+    @Query("SELECT COUNT(*) FROM TaskEntity t WHERE t.project.id = :projectId")
+    Long countTasksByProjectId(@Param("projectId") Long projectId);
+
+    @Query("SELECT t.status AS status, COUNT(t) AS quantity FROM TaskEntity t WHERE t.project.id = :projectId GROUP BY t.status")
+    List<Object[]> countTasksByStatus(@Param("projectId") Long projectId);
+
+    @Query("SELECT t.priority AS priority, COUNT(t) AS quantity FROM TaskEntity t WHERE t.project.id = :projectId GROUP BY t.priority")
+    List<Object[]> countTasksByPriority(@Param("projectId") Long projectId);
 }

@@ -79,4 +79,49 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMemberEnti
             , nativeQuery = true
     )
     Tuple getProjectByUserIdAndProjectId(@Param("userId") Long userId, @Param("projectId") Long projectId);
+
+    @Query("SELECT COUNT(*) FROM ProjectMemberEntity pm WHERE pm.project.id = :projectId")
+    Long countMembersInProject(@Param("projectId") Long projectId);
+
+
+    @Query(value = "SELECT " +
+            "u.nickname, " +
+            "pm.role, " +
+            "pm.joined_at, " +
+            "COALESCE(t.current_tasks, 0) AS current_tasks, " +
+            "COALESCE(ct.completed_tasks, 0) AS completed_tasks, " +
+            "CASE " +
+            "   WHEN ct.completed_tasks = 0 THEN 0 " +
+            "   ELSE (ct.successful_tasks * 100.0 / ct.completed_tasks) " +
+            "END AS completed_tasks_percentage " +
+            "FROM " +
+            "project_member AS pm " +
+            "JOIN " +
+            "app_user AS u ON u.id = pm.user_id " +
+            "LEFT JOIN ( " +
+            "   SELECT " +
+            "       assigned_id, " +
+            "       COUNT(*) AS current_tasks " +
+            "   FROM " +
+            "       tasks " +
+            "   WHERE " +
+            "       project_id = :projectId " +
+            "   GROUP BY " +
+            "       assigned_id " +
+            ") AS t ON t.assigned_id = pm.user_id " +
+            "LEFT JOIN ( " +
+            "   SELECT " +
+            "       assigned_id, " +
+            "       COUNT(*) AS completed_tasks, " +
+            "       SUM(CASE WHEN completion_status = 'SUCCESSFUL' THEN 1 ELSE 0 END) AS successful_tasks " +
+            "   FROM " +
+            "       completed_task " +
+            "   WHERE " +
+            "       project_id = :projectId " +
+            "   GROUP BY " +
+            "       assigned_id " +
+            ") AS ct ON ct.assigned_id = pm.user_id " +
+            "WHERE " +
+            "pm.project_id = :projectId", nativeQuery = true)
+    List<Object[]> findProjectMembersWithTaskStatus(@Param("projectId") Long projectId);
 }

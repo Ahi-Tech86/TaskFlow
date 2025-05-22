@@ -17,8 +17,9 @@ ext {
 	jjwtVersion = '0.11.5'
 	junitVersion = '5.7.0'
 	dotenvVersion = '5.2.2'
-	mockitoVersion = '3.6.28'
 	openApiVersion = '2.0.2'
+	pdfboxVersion = '2.0.14'
+	mockitoVersion = '3.6.28'
 	restAssuredVersion = '5.3.2'
 	testcontainersVersion = '1.17.3'
 	redisTestContainerVersion = '2.2.2'
@@ -56,6 +57,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
 	implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+	implementation "org.apache.pdfbox:pdfbox:${pdfboxVersion}"
 	implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 	implementation "io.github.cdimascio:java-dotenv:${dotenvVersion}"
 
