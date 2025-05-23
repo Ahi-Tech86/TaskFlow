@@ -15,6 +15,7 @@ import com.ahicode.TextMe.service.factory.user.UserDtoFactory;
 import com.ahicode.TextMe.service.factory.user.UserEntityFactory;
 import com.ahicode.TextMe.model.entity.UserEntity;
 import com.ahicode.TextMe.repository.UserRepository;
+import com.ahicode.TextMe.service.generator.ActivationCodeGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,12 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service

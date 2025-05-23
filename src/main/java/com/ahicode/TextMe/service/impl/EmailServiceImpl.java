@@ -38,16 +38,16 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendEmailWithAttachment(String to, String subject, String text, byte[] attachment, String attachmentFilename) {
+    public void sendReportForAllTime(String to, String projectName, byte[] attachment) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             helper.setFrom(username);
             helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(text);
+            helper.setSubject(String.format("The %s project report for all time", projectName));
+            helper.setText("Please find the attached project report for all time");
 
-            helper.addAttachment(attachmentFilename, new ByteArrayResource(attachment));
+            helper.addAttachment("all_time_report.pdf", new ByteArrayResource(attachment));
 
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {

@@ -8,13 +8,11 @@ import com.ahicode.TextMe.model.enums.Action;
 import com.ahicode.TextMe.repository.ProjectMemberRepository;
 import com.ahicode.TextMe.service.ProjectValidationService;
 import com.ahicode.TextMe.service.factory.report.ReportRequestDtoFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ahicode.TextMe.service.processor.SerializeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -22,7 +20,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ReportProducer {
 
-    private final ObjectMapper objectMapper;
+    private final SerializeMessage serializer;
     private final RabbitTemplate rabbitTemplate;
     private final ReportRequestDtoFactory factory;
     private final PermissionChecker permissionChecker;
@@ -32,7 +30,9 @@ public class ReportProducer {
     public void processRequest(Long projectId, Long userId) {
         ProjectMemberEntity projectMember = validateAndGetProjectMember(projectId, userId);
         ReportRequestDto requestDto = factory.makeReportRequestDto(projectId, projectMember.getUser().getEmail());
-        sendReportRequest(requestDto);
+        String jsonMessage = serializer.serializeMessage(requestDto);
+        rabbitTemplate.convertAndSend("exchanger", "reports.routing.key", jsonMessage);
+        log.info("Send request to report from {}", jsonMessage);
     }
 
     private ProjectMemberEntity validateAndGetProjectMember(Long projectId, Long userId) {
@@ -45,17 +45,5 @@ public class ReportProducer {
         }
 
         return projectMember;
-    }
-
-    private void sendReportRequest(ReportRequestDto requestDto) {
-        try {
-            String jsonRequestBody = objectMapper.writeValueAsString(requestDto);
-            rabbitTemplate.convertAndSend("exchanger", "reports.routing.key", jsonRequestBody);
-            log.info("Send request to report from {}", jsonRequestBody);
-
-        } catch (JsonProcessingException e) {
-            log.error("An error occurred while serializing and sending the request {}", requestDto.toString());
-            throw new AppException("An internal server error occurred, please try again", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 }

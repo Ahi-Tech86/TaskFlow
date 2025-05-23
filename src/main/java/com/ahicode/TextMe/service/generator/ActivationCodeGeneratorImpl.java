@@ -1,6 +1,5 @@
-package com.ahicode.TextMe.service.impl;
+package com.ahicode.TextMe.service.generator;
 
-import com.ahicode.TextMe.service.ActivationCodeGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;

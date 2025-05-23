@@ -1,6 +1,6 @@
 package com.ahicode.TextMe.unit.service;
 
-import com.ahicode.TextMe.service.impl.ActivationCodeGeneratorImpl;
+import com.ahicode.TextMe.service.generator.ActivationCodeGeneratorImpl;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
