@@ -38,5 +38,5 @@ public class ReportDto {
     // COMPLETED TASKS
     private Long successfulCompletedTasksInProject;
     private Long unsuccessfulCompletedTasksInProject;
-    private Long allCompletedTasksInProject = successfulCompletedTasksInProject + unsuccessfulCompletedTasksInProject;
+    private Long allCompletedTasksInProject;
 }

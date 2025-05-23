@@ -44,8 +44,12 @@ public class ProjectDataCollector {
         for (Object[] result : completedTasksDistributionByCompletionStatus) {
             CompletionTaskStatus status = (CompletionTaskStatus) result[0];
             Long quantity = (Long) result[1];
+            taskCount.put(status, quantity);
         }
         Long successfulTaskCount = taskCount.getOrDefault(CompletionTaskStatus.SUCCESSFUL, 0L);
+        if (successfulTaskCount == null) {
+            successfulTaskCount = 0L;
+        }
         Long unsuccessfulTaskCount = taskCount.getOrDefault(CompletionTaskStatus.UNSUCCESSFUL, 0L);
 
         Long quantityTasksInProgress = taskRepository.countInProgressTasksByProjectId(projectId);
@@ -56,6 +60,7 @@ public class ProjectDataCollector {
         for (Object[] result : currentTasksDistributionByStatus) {
             TaskStatus status = (TaskStatus) result[0];
             Long quantity = (Long) result[1];
+            tasksCountByStatus.put(status, quantity);
         }
         Long todoTaskQuantity = tasksCountByStatus.getOrDefault(TaskStatus.TO_DO, 0L);
         Long inProgressTaskQuantity = tasksCountByStatus.getOrDefault(TaskStatus.IN_PROGRESS, 0L);
@@ -66,6 +71,7 @@ public class ProjectDataCollector {
         for (Object[] result : currentTasksDistributionByPriority) {
             TaskPriority priority = (TaskPriority) result[0];
             Long quantity = (Long) result[1];
+            tasksCountByPriority.put(priority, quantity);
         }
         Long lowPriorityTasksQuantity = tasksCountByPriority.getOrDefault(TaskPriority.LOW, 0L);
         Long mediumPriorityTasksQuantity = tasksCountByPriority.getOrDefault(TaskPriority.MEDIUM, 0L);
@@ -92,10 +98,6 @@ public class ProjectDataCollector {
                     .build();
 
             projectMembersStatsMap.put(nickname, userProjectStats);
-
-            System.out.printf("%s role: %s, joinedAt: %s, currentTasks: %s, completedTasks: %s, completedTasksPercentage: %s %n",
-                    nickname, role.toString(), joinedAt.toString(), currentTasks, completedTasks, completedTasksPercentage
-            );
         }
 
         return ReportDto.builder()
@@ -115,6 +117,7 @@ public class ProjectDataCollector {
                 .currentTasksWithHighPriority(highPriorityTasksQuantity)
                 .successfulCompletedTasksInProject(successfulTaskCount)
                 .unsuccessfulCompletedTasksInProject(unsuccessfulTaskCount)
+                .allCompletedTasksInProject(successfulTaskCount + unsuccessfulTaskCount)
                 .build();
     }
 }
