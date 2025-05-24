@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 @Slf4j
 @Service
@@ -30,8 +31,11 @@ public class ReportConsumer {
         String email = requestDto.getEmail();
 
         ReportDto report = dataCollector.collectProjectData(projectId);
-        ByteArrayOutputStream outputStream = pdfGenerator.generatePdf(report);
-
-        emailService.sendReportForAllTime(email, report.getProjectName(), outputStream.toByteArray());
+        try {
+            byte[] pdfBytes = pdfGenerator.generatePdf(report);
+            emailService.sendReportForAllTime(email, report.getProjectName(), pdfBytes);
+        } catch (IOException e) {
+            log.error("Error generating PDF", e);
+        }
     }
 }

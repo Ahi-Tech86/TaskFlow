@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            text-align: center;
+            color: #333;
+        }
+        .content {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1 th:text="${report.projectName}">Project Name</h1>
+</div>
+<div class="content">
+    <p th:text="${report.projectDescription}">Project Description</p>
+</div>
+</body>
+</html>

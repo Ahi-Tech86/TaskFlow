@@ -21,6 +21,7 @@ ext {
 	pdfboxVersion = '2.0.14'
 	mockitoVersion = '3.6.28'
 	restAssuredVersion = '5.3.2'
+	openhtmltopdfVersion = '1.0.6'
 	testcontainersVersion = '1.17.3'
 	redisTestContainerVersion = '2.2.2'
 }
@@ -43,6 +44,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -60,6 +62,7 @@ dependencies {
 	implementation "org.apache.pdfbox:pdfbox:${pdfboxVersion}"
 	implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 	implementation "io.github.cdimascio:java-dotenv:${dotenvVersion}"
+	implementation "com.openhtmltopdf:openhtmltopdf-pdfbox:${openhtmltopdfVersion}"
 
 	// Test dependencies
 	testImplementation 'com.h2database:h2'

@@ -2,8 +2,8 @@ package com.ahicode.TextMe.service.generator;
 
 import com.ahicode.TextMe.model.dto.report.ReportDto;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public interface PdfGenerator {
-    ByteArrayOutputStream generatePdf(ReportDto reportDto);
+    byte[] generatePdf(ReportDto reportDto) throws IOException;
 }
