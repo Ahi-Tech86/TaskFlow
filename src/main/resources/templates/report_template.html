@@ -4,6 +4,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 20px;
         }
         .header {
             text-align: center;
@@ -12,14 +13,78 @@
         .content {
             margin: 20px;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 <div class="header">
     <h1 th:text="${report.projectName}">Project Name</h1>
+    <p>Owner: <span th:text="${report.projectOwnerNickname}">Owner Nickname</span></p>
+    <p>Created at: <span th:text="${#temporals.format(report.projectCreateAt, 'yyyy-MM-dd HH:mm')}">Create Date</span></p>
+    <p>Start date: <span th:text="${#temporals.format(report.projectStartDate, 'yyyy-MM-dd')}">Start Date</span></p>
 </div>
+
 <div class="content">
     <p th:text="${report.projectDescription}">Project Description</p>
+</div>
+
+<div class="section">
+    <h2>Project Members</h2>
+    <p>Total members: <span th:text="${report.quantityOfProjectMembers}">0</span></p>
+    <table>
+        <thead>
+        <tr>
+            <th>Nickname</th>
+            <th>Role</th>
+            <th>Joined At</th>
+            <th>Current Tasks</th>
+            <th>Completed Tasks</th>
+            <th>Completed Tasks Percentage</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${report.projectMembersStatsMap}">
+            <td th:text="${entry.key}">Nickname</td>
+            <td th:text="${entry.value.role}">Role</td>
+            <td th:text="${#temporals.format(entry.value.joinedAt, 'yyyy-MM-dd HH:mm')}">Joined At</td>
+            <td th:text="${entry.value.currentTasks}">0</td>
+            <td th:text="${entry.value.completedTasks}">0</td>
+            <td th:text="${#numbers.formatDecimal(entry.value.completedTasksPercentage, 1, 2)} + '%'">0%</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Current Tasks</h2>
+    <p>All current tasks: <span th:text="${report.allCurrentTasks}">0</span></p>
+    <p>In Todo status: <span th:text="${report.currentTasksInTodoStatus}">0</span></p>
+    <p>In Progress status: <span th:text="${report.currentTasksInProgressStatus}">0</span></p>
+    <p>Needs Approval status: <span th:text="${report.currentTasksInNeedsApprovalStatus}">0</span></p>
+    <p>Low priority: <span th:text="${report.currentTasksWithLowPriority}">0</span></p>
+    <p>Medium priority: <span th:text="${report.currentTasksWithMediumPriority}">0</span></p>
+    <p>High priority: <span th:text="${report.currentTasksWithHighPriority}">0</span></p>
+</div>
+
+<div class="section">
+    <h2>Completed Tasks</h2>
+    <p>Successful: <span th:text="${report.successfulCompletedTasksInProject}">0</span></p>
+    <p>Unsuccessful: <span th:text="${report.unsuccessfulCompletedTasksInProject}">0</span></p>
+    <p>All completed: <span th:text="${report.allCompletedTasksInProject}">0</span></p>
 </div>
 </body>
 </html>

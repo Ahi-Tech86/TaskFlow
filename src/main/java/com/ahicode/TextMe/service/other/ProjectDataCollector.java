@@ -88,13 +88,14 @@ public class ProjectDataCollector {
             Long currentTasks = (Long) result[3];
             Long completedTasks = (Long) result[4];
             BigDecimal completedTasksPercentage = (BigDecimal) result[5];
+            BigDecimal completedTasksPercentageValue = completedTasksPercentage != null ? completedTasksPercentage : BigDecimal.ZERO;
 
             UserProjectStats userProjectStats = UserProjectStats.builder()
                     .role(role)
                     .joinedAt(joinedAt)
                     .currentTasks(currentTasks)
                     .completedTasks(completedTasks)
-                    .completedTasksPercentage(completedTasksPercentage)
+                    .completedTasksPercentage(completedTasksPercentageValue)
                     .build();
 
             projectMembersStatsMap.put(nickname, userProjectStats);
